@@ -14,7 +14,7 @@
   <img src="https://img.shields.io/badge/WinUI-3-0078D7.svg" alt="WinUI 3" />
   <img src="https://img.shields.io/badge/Windows%20App%20SDK-2.5.1-512BD4.svg" alt="Windows App SDK" />
   <img src="https://img.shields.io/badge/Platform-Windows%2011%20%7C%20x64-00A4EF.svg" alt="Platform x64" />
-  <img src="https://img.shields.io/badge/Tests-64%20Passed-brightgreen.svg" alt="Unit Tests" />
+  <img src="https://img.shields.io/badge/Tests-66%20Passed-brightgreen.svg" alt="Unit Tests" />
   <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License" />
 </p>
 

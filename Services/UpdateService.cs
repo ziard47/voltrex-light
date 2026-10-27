@@ -15,7 +15,8 @@ namespace voltrex_light.Services;
 public class UpdateService : IUpdateService
 {
     private readonly HttpClient _httpClient;
-    private const string DefaultUpdateManifestUrl = "https://raw.githubusercontent.com/voltrexdigital/voltrex-light/main/version.json";
+    public const string GitHubReleasesApiUrl = "https://api.github.com/repos/ziard47/voltrex-light/releases/latest";
+    public const string GitHubManifestFallbackUrl = "https://raw.githubusercontent.com/ziard47/voltrex-light/main/version.json";
 
     public const string DefaultCurrentReleaseNotes =
 @"✨ Highlights in Voltrex Light:
@@ -57,62 +58,179 @@ public class UpdateService : IUpdateService
             IsUpdateAvailable = false
         };
 
+        bool foundRelease = false;
+        Exception? networkException = null;
+
+        // 1. Primary: Check directly from GitHub Releases API
         try
         {
-            // Attempt to query update manifest
-            using var response = await _httpClient.GetAsync(DefaultUpdateManifestUrl, cancellationToken);
-            if (response.IsSuccessStatusCode)
+            using var releasesRequest = new HttpRequestMessage(HttpMethod.Get, GitHubReleasesApiUrl);
+            releasesRequest.Headers.Accept.ParseAdd("application/vnd.github.v3+json");
+
+            using var releasesResponse = await _httpClient.SendAsync(releasesRequest, cancellationToken);
+            if (releasesResponse.IsSuccessStatusCode)
             {
-                var json = await response.Content.ReadAsStringAsync(cancellationToken);
+                var json = await releasesResponse.Content.ReadAsStringAsync(cancellationToken);
                 using var doc = JsonDocument.Parse(json);
                 var root = doc.RootElement;
 
-                if (root.TryGetProperty("version", out var verProp))
+                if (root.TryGetProperty("tag_name", out var tagProp) && tagProp.GetString() is string tag && !string.IsNullOrWhiteSpace(tag))
                 {
-                    result.LatestVersion = verProp.GetString() ?? currentVersion;
-                }
-                if (root.TryGetProperty("releaseDate", out var dateProp))
-                {
-                    result.ReleaseDate = dateProp.GetString() ?? string.Empty;
-                }
-                if (root.TryGetProperty("releaseNotes", out var notesProp))
-                {
-                    result.ReleaseNotes = notesProp.GetString() ?? string.Empty;
-                }
-                if (root.TryGetProperty("downloadUrl", out var urlProp))
-                {
-                    result.DownloadUrl = urlProp.GetString() ?? string.Empty;
-                }
-                if (root.TryGetProperty("downloadSize", out var sizeProp))
-                {
-                    result.DownloadSizeBytes = sizeProp.GetInt64();
+                    result.LatestVersion = tag.TrimStart('v', 'V');
+                    foundRelease = true;
                 }
 
-                result.IsUpdateAvailable = IsNewerVersion(result.LatestVersion, currentVersion);
-                Status = result.IsUpdateAvailable ? UpdateStatus.UpdateAvailable : UpdateStatus.UpToDate;
+                if (root.TryGetProperty("published_at", out var pubProp) && pubProp.GetString() is string pubStr && DateTime.TryParse(pubStr, out var pubDate))
+                {
+                    result.ReleaseDate = pubDate.ToString("MMMM yyyy");
+                }
+
+                if (root.TryGetProperty("body", out var bodyProp) && bodyProp.GetString() is string body && !string.IsNullOrWhiteSpace(body))
+                {
+                    result.ReleaseNotes = body.Trim();
+                }
+
+                if (root.TryGetProperty("assets", out var assetsProp) && assetsProp.ValueKind == JsonValueKind.Array)
+                {
+                    string? exeUrl = null;
+                    long exeSize = 0;
+                    string? zipUrl = null;
+                    long zipSize = 0;
+
+                    foreach (var asset in assetsProp.EnumerateArray())
+                    {
+                        if (asset.TryGetProperty("name", out var nameProp) && nameProp.GetString() is string name)
+                        {
+                            if (name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                            {
+                                if (asset.TryGetProperty("browser_download_url", out var dlProp))
+                                {
+                                    exeUrl = dlProp.GetString();
+                                }
+                                if (asset.TryGetProperty("size", out var sizeProp))
+                                {
+                                    exeSize = sizeProp.GetInt64();
+                                }
+                                break;
+                            }
+                            else if (name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) && zipUrl == null)
+                            {
+                                if (asset.TryGetProperty("browser_download_url", out var dlProp))
+                                {
+                                    zipUrl = dlProp.GetString();
+                                }
+                                if (asset.TryGetProperty("size", out var sizeProp))
+                                {
+                                    zipSize = sizeProp.GetInt64();
+                                }
+                            }
+                        }
+                    }
+
+                    if (!string.IsNullOrEmpty(exeUrl))
+                    {
+                        result.DownloadUrl = exeUrl;
+                        result.DownloadSizeBytes = exeSize;
+                    }
+                    else if (!string.IsNullOrEmpty(zipUrl))
+                    {
+                        result.DownloadUrl = zipUrl;
+                        result.DownloadSizeBytes = zipSize;
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(result.DownloadUrl) && root.TryGetProperty("html_url", out var htmlUrlProp))
+                {
+                    result.DownloadUrl = htmlUrlProp.GetString() ?? string.Empty;
+                }
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            networkException = ex;
+        }
+        catch (TaskCanceledException ex)
+        {
+            networkException = ex;
+        }
+        catch (Exception)
+        {
+            // Non-critical, fall back to version.json
+        }
+
+        // 2. Secondary fallback: Check version.json in repository
+        if (!foundRelease)
+        {
+            try
+            {
+                using var response = await _httpClient.GetAsync(GitHubManifestFallbackUrl, cancellationToken);
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync(cancellationToken);
+                    using var doc = JsonDocument.Parse(json);
+                    var root = doc.RootElement;
+
+                    if (root.TryGetProperty("version", out var verProp))
+                    {
+                        result.LatestVersion = verProp.GetString() ?? currentVersion;
+                    }
+                    if (root.TryGetProperty("releaseDate", out var dateProp))
+                    {
+                        result.ReleaseDate = dateProp.GetString() ?? string.Empty;
+                    }
+                    if (root.TryGetProperty("releaseNotes", out var notesProp))
+                    {
+                        result.ReleaseNotes = notesProp.GetString() ?? string.Empty;
+                    }
+                    if (root.TryGetProperty("downloadUrl", out var urlProp))
+                    {
+                        result.DownloadUrl = urlProp.GetString() ?? string.Empty;
+                    }
+                    if (root.TryGetProperty("downloadSize", out var sizeProp))
+                    {
+                        result.DownloadSizeBytes = sizeProp.GetInt64();
+                    }
+                    foundRelease = true;
+                    networkException = null;
+                }
+                else
+                {
+                    // If remote manifest not yet found, app is currently up to date
+                    result.IsUpdateAvailable = false;
+                    Status = UpdateStatus.UpToDate;
+                    networkException = null;
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                networkException ??= ex;
+            }
+            catch (TaskCanceledException ex)
+            {
+                networkException ??= ex;
+            }
+            catch (Exception ex)
+            {
+                networkException ??= ex;
+            }
+        }
+
+        if (networkException != null && !foundRelease)
+        {
+            if (networkException is TaskCanceledException)
+            {
+                result.ErrorMessage = "Update check was cancelled or timed out.";
             }
             else
             {
-                // If remote manifest is not found yet, current version is up to date
-                result.IsUpdateAvailable = false;
-                Status = UpdateStatus.UpToDate;
+                result.ErrorMessage = "Unable to connect to update server. Please check your internet connection.";
             }
-        }
-        catch (HttpRequestException)
-        {
-            // Network unreachable / offline
-            result.ErrorMessage = "Unable to connect to update server. Please check your internet connection.";
             Status = UpdateStatus.Error;
         }
-        catch (TaskCanceledException)
+        else
         {
-            result.ErrorMessage = "Update check was cancelled or timed out.";
-            Status = UpdateStatus.Error;
-        }
-        catch (Exception ex)
-        {
-            result.ErrorMessage = $"Failed to check for updates: {ex.Message}";
-            Status = UpdateStatus.Error;
+            result.IsUpdateAvailable = IsNewerVersion(result.LatestVersion, currentVersion);
+            Status = result.IsUpdateAvailable ? UpdateStatus.UpdateAvailable : UpdateStatus.UpToDate;
         }
 
         if (string.IsNullOrWhiteSpace(result.ReleaseDate))

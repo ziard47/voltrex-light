@@ -5,7 +5,7 @@
 #define MyAppName "Voltrex Light"
 #define MyAppVersion "1.0.0"
 #define MyAppPublisher "mohomed Ziard | Voltrex Digital"
-#define MyAppURL "https://github.com/voltrexdigital/voltrex-light"
+#define MyAppURL "https://github.com/ziard47/voltrex-light"
 #define MyAppExeName "voltrex-light.exe"
 #define MySourceDir "..\bin\Release\net8.0-windows10.0.19041.0\win-x64\publish"
 

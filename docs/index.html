@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voltrex Light — Modern Windows 11 Disk Space Analyzer & Visualization Suite</title>
+  <meta name="description" content="High-performance native Windows 11 disk space analyzer and storage visualization suite built with C#, .NET 8, and WinUI 3. High-speed traversal, Sunburst and Treemap visualizations, and zero telemetry.">
+  <meta name="author" content="mohomed Ziard | Voltrex Digital">
+  <meta name="theme-color" content="#121358">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Voltrex Light — Modern Windows 11 Storage Analyzer">
+  <meta property="og:description" content="High-performance native Windows 11 disk space analyzer with interactive Sunburst and Treemap charts. Free, open source, and 100% private.">
+  <meta property="og:image" content="assets/voltrex_light_logo.png">
+  <meta property="og:type" content="website">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="assets/voltrex_light_logo.png">
+
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- External Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header class="navbar">
+    <div class="container navbar-inner">
+      <a href="#" class="brand">
+        <img src="assets/voltrex_light_logo.png" alt="Voltrex Light Logo" class="brand-logo">
+        <span class="brand-text">Voltrex Light</span>
+        <span class="brand-tag">v1.0.0</span>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#visualizations">Visualizations</a></li>
+          <li><a href="#specs">Specifications</a></li>
+          <li><a href="#download">Download</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="https://github.com/ziard47/voltrex-light" target="_blank" rel="noopener" class="btn btn-outline btn-sm">
+          <i class="fa-brands fa-github"></i> GitHub
+        </a>
+        <a href="#download" class="btn btn-primary btn-sm">
+          <i class="fa-solid fa-download"></i> Get v1.0.0
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container hero-grid">
+      <div class="hero-content">
+        <div>
+          <span class="badge badge-accent">
+            <i class="fa-solid fa-bolt"></i> Windows 11 Native Disk Analyzer
+          </span>
+        </div>
+
+        <h1 class="hero-title">
+          Audit & Visualize Disk Space with <span>Speed and Precision</span>
+        </h1>
+
+        <p class="hero-description">
+          A high-performance storage analyzer for Windows 11 built with C#, .NET 8, and WinUI 3. Recursive directory traversal, interactive Sunburst and Treemap visualizations, full Windows Explorer shell controls, and 100% private offline processing.
+        </p>
+
+        <div class="hero-actions">
+          <a href="https://github.com/ziard47/voltrex-light/releases/download/v1.0.0/voltrex-light-setup-1.0.0.exe" class="btn btn-primary btn-lg">
+            <i class="fa-brands fa-windows"></i> Download Installer (.exe)
+          </a>
+          <a href="https://github.com/ziard47/voltrex-light/releases/download/v1.0.0/voltrex-light-v1.0.0-win-x64-portable.zip" class="btn btn-secondary btn-lg">
+            <i class="fa-solid fa-box-archive"></i> Portable (.zip)
+          </a>
+        </div>
+
+        <div class="hero-spec-strip">
+          <span><i class="fa-solid fa-microchip"></i> .NET 8 / WinUI 3</span>
+          <span><i class="fa-solid fa-shield-halved"></i> 100% Offline (No Telemetry)</span>
+          <span><i class="fa-solid fa-gauge-high"></i> Multi-Threaded Engine</span>
+          <span><i class="fa-solid fa-scale-balanced"></i> MIT Licensed</span>
+        </div>
+      </div>
+
+      <!-- App Mockup Frame (Solid Native UI Representation) -->
+      <div class="app-frame">
+        <div class="app-frame-header">
+          <div class="app-frame-branding">
+            <img src="assets/voltrex_light_logo.png" width="16" height="16" alt="Icon">
+            <span>Voltrex Light</span>
+            <span class="app-frame-pill">
+              <i class="fa-solid fa-check"></i> Ready
+            </span>
+          </div>
+          <div class="app-frame-controls">
+            <i class="fa-regular fa-window-minimize"></i>
+            <i class="fa-regular fa-window-maximize"></i>
+            <i class="fa-solid fa-xmark"></i>
+          </div>
+        </div>
+
+        <div class="app-frame-body">
+          <!-- Sidebar -->
+          <div class="app-frame-sidebar">
+            <div class="app-sidebar-item active">
+              <i class="fa-solid fa-chart-pie"></i> Overview
+            </div>
+            <div class="app-sidebar-item">
+              <i class="fa-solid fa-folder-tree"></i> Storage Analysis
+            </div>
+            <div class="app-sidebar-item">
+              <i class="fa-solid fa-file-circle-exclamation"></i> Largest Files
+            </div>
+            <div class="app-sidebar-divider"></div>
+            <div style="font-size: 9px; color: var(--text-tertiary); font-weight:700; text-transform:uppercase; padding: 2px 8px;">Drives</div>
+            <div class="app-sidebar-item">
+              <i class="fa-solid fa-hard-drive"></i> Local (C:)
+            </div>
+            <div class="app-sidebar-item">
+              <i class="fa-solid fa-hard-drive"></i> Games (D:)
+            </div>
+            <div class="app-sidebar-item">
+              <i class="fa-solid fa-hard-drive"></i> Media (E:)
+            </div>
+          </div>
+
+          <!-- Main Workspace -->
+          <div class="app-frame-main">
+            <!-- Stat Row -->
+            <div class="app-stat-row">
+              <div class="app-stat-card">
+                <div class="app-stat-label">Total Capacity</div>
+                <div class="app-stat-val">2.87 TB</div>
+              </div>
+              <div class="app-stat-card">
+                <div class="app-stat-label">Used Space</div>
+                <div class="app-stat-val" style="color:#55c7be;">2.11 TB</div>
+              </div>
+              <div class="app-stat-card">
+                <div class="app-stat-label">Available Free</div>
+                <div class="app-stat-val">774.08 GB</div>
+              </div>
+            </div>
+
+            <!-- Visualization Representation -->
+            <div class="app-vis-preview">
+              <div class="app-vis-toolbar">
+                <span style="font-weight: 600;"><i class="fa-solid fa-circle-nodes" style="color:var(--color-accent);"></i> Storage Distribution</span>
+                <span>Depth: 4 | Sunburst</span>
+              </div>
+
+              <div class="app-vis-chart-bars">
+                <div class="vis-bar-item">
+                  <span style="color:var(--text-secondary);">SteamLibrary</span>
+                  <div class="vis-progress"><div class="vis-fill" style="width: 78%; background-color: #36ADA3;"></div></div>
+                  <span style="text-align: right; font-family:var(--font-mono); color:var(--text-primary);">412 GB</span>
+                </div>
+                <div class="vis-bar-item">
+                  <span style="color:var(--text-secondary);">Videos & Renders</span>
+                  <div class="vis-progress"><div class="vis-fill" style="width: 52%; background-color: #4172af;"></div></div>
+                  <span style="text-align: right; font-family:var(--font-mono); color:var(--text-primary);">240 GB</span>
+                </div>
+                <div class="vis-bar-item">
+                  <span style="color:var(--text-secondary);">AppData/Local</span>
+                  <div class="vis-progress"><div class="vis-fill" style="width: 28%; background-color: #2F578A;"></div></div>
+                  <span style="text-align: right; font-family:var(--font-mono); color:var(--text-primary);">96 GB</span>
+                </div>
+                <div class="vis-bar-item">
+                  <span style="color:var(--text-secondary);">VM Images</span>
+                  <div class="vis-progress"><div class="vis-fill" style="width: 18%; background-color: #232F72;"></div></div>
+                  <span style="text-align: right; font-family:var(--font-mono); color:var(--text-primary);">64 GB</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Core Features Section -->
+  <section id="features" class="section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">Engineered for Performance</div>
+        <h2 class="section-title">Built for Modern Windows Storage</h2>
+        <p class="section-desc">Voltrex Light replaces sluggish legacy utilities with a modern 64-bit engine designed for today's terabyte SSDs and complex NTFS partition structures.</p>
+      </div>
+
+      <div class="features-grid">
+        <!-- Feature 1 -->
+        <div class="feature-card">
+          <div class="feature-icon-box">
+            <i class="fa-solid fa-gauge-high"></i>
+          </div>
+          <h3 class="feature-title">Non-Blocking Scan Engine</h3>
+          <p class="feature-body">
+            Multi-threaded asynchronous file system crawler with UI update throttling (~60 ms). The application never locks or stutters even while processing millions of nodes across NVMe drives.
+          </p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="feature-card">
+          <div class="feature-icon-box">
+            <i class="fa-solid fa-arrows-split-up-and-left"></i>
+          </div>
+          <h3 class="feature-title">Junction & Loop Avoidance</h3>
+          <p class="feature-body">
+            Detects NTFS reparse points, symbolic links, and volume mount junctions. Prevents infinite recursion cycles and eliminates inaccurate double-counting of physical drive storage.
+          </p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="feature-card">
+          <div class="feature-icon-box">
+            <i class="fa-solid fa-chart-pie"></i>
+          </div>
+          <h3 class="feature-title">Dual Interactive Visualizers</h3>
+          <p class="feature-body">
+            Seamlessly toggle between Filelight-style Radial Sunburst and Squarified Treemap charts. Features double-click drill-down, depth scaling (1-6 layers), and breadcrumb navigation.
+          </p>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="feature-card">
+          <div class="feature-icon-box">
+            <i class="fa-solid fa-table-list"></i>
+          </div>
+          <h3 class="feature-title">Unified Storage Analysis</h3>
+          <p class="feature-body">
+            Multi-column sortable table showing exact bytes, % of Parent, % of Root, file counts, and modification stamps. Features instant in-memory filtering with <code>Ctrl + F</code> search.
+          </p>
+        </div>
+
+        <!-- Feature 5 -->
+        <div class="feature-card">
+          <div class="feature-icon-box">
+            <i class="fa-brands fa-windows"></i>
+          </div>
+          <h3 class="feature-title">Full Windows Shell Integration</h3>
+          <p class="feature-body">
+            Direct access to Explorer context menus: Show in Explorer, Open, Open With, Copy Path, Scan from here, Recycle Bin, and Permanent Delete with safeguards.
+          </p>
+        </div>
+
+        <!-- Feature 6 -->
+        <div class="feature-card">
+          <div class="feature-icon-box">
+            <i class="fa-solid fa-user-shield"></i>
+          </div>
+          <h3 class="feature-title">100% Private & Telemetry-Free</h3>
+          <p class="feature-body">
+            Operates entirely offline. No cloud accounts, no data tracking, and zero diagnostic telemetry. Your directory paths, filenames, and file sizes never leave your device.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Visualizations Deep Dive -->
+  <section id="visualizations" class="section" style="background-color: var(--color-midnight);">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">Visualization Suite</div>
+        <h2 class="section-title">Two Complementary Ways to Inspect Storage</h2>
+        <p class="section-desc">Different disk cleanup tasks benefit from different visual models. Voltrex Light integrates both with instant one-click switching.</p>
+      </div>
+
+      <div class="vis-compare-grid">
+        <!-- Radial Sunburst -->
+        <div class="vis-card">
+          <div class="vis-badge">
+            <i class="fa-solid fa-circle-notch"></i> RADIAL SUNBURST
+          </div>
+          <h3 class="vis-title">Concentric Hierarchy (Filelight Model)</h3>
+          <p class="feature-body">
+            The center disc represents the root folder, while concentric outer rings depict descending folder depths. Angular intervals maintain strict parent-child spatial containment.
+          </p>
+
+          <div class="vis-diagram-box">
+            <svg width="140" height="140" viewBox="0 0 100 100">
+              <!-- Center disc -->
+              <circle cx="50" cy="50" r="16" fill="#121358" stroke="#36ADA3" stroke-width="2" />
+              <!-- Inner ring segments -->
+              <path d="M 50 24 A 26 26 0 0 1 76 50 L 66 50 A 16 16 0 0 0 50 34 Z" fill="#36ADA3" />
+              <path d="M 76 50 A 26 26 0 0 1 50 76 L 50 66 A 16 16 0 0 0 66 50 Z" fill="#2F578A" />
+              <path d="M 50 76 A 26 26 0 0 1 24 50 L 34 50 A 16 16 0 0 0 50 66 Z" fill="#232F72" />
+              <path d="M 24 50 A 26 26 0 0 1 50 24 L 50 34 A 16 16 0 0 0 34 50 Z" fill="#4172af" />
+              <!-- Outer ring segments -->
+              <path d="M 50 14 A 36 36 0 0 1 86 50 L 76 50 A 26 26 0 0 0 50 24 Z" fill="#55c7be" />
+              <path d="M 86 50 A 36 36 0 0 1 50 86 L 50 76 A 26 26 0 0 0 76 50 Z" fill="#323d94" />
+            </svg>
+          </div>
+
+          <ul class="vis-feature-list">
+            <li><i class="fa-solid fa-check"></i> <strong>Intuitive Depth</strong>: Immediate perception of deep folder trees versus shallow directories.</li>
+            <li><i class="fa-solid fa-check"></i> <strong>Fast Drill-Down</strong>: Double-click any arc to zoom in; click the center to navigate up.</li>
+            <li><i class="fa-solid fa-check"></i> <strong>Proportional Angles</strong>: Angle width directly corresponds to disk occupancy percentage.</li>
+          </ul>
+        </div>
+
+        <!-- Squarified Treemap -->
+        <div class="vis-card">
+          <div class="vis-badge">
+            <i class="fa-solid fa-table-cells-large"></i> SQUARIFIED TREEMAP
+          </div>
+          <h3 class="vis-title">Space-Filling Rectangles (Bruls Algorithm)</h3>
+          <p class="feature-body">
+            Uses the Bruls, Huizing, and van Wijk layout algorithm to optimize rectangle aspect ratios close to 1:1, maximizing space efficiency and legible labels.
+          </p>
+
+          <div class="vis-diagram-box">
+            <svg width="200" height="120" viewBox="0 0 100 60">
+              <rect x="2" y="2" width="55" height="56" fill="#36ADA3" stroke="#121358" stroke-width="1.5" rx="2" />
+              <rect x="59" y="2" width="39" height="32" fill="#2F578A" stroke="#121358" stroke-width="1.5" rx="2" />
+              <rect x="59" y="36" width="18" height="22" fill="#232F72" stroke="#121358" stroke-width="1.5" rx="2" />
+              <rect x="79" y="36" width="19" height="22" fill="#4172af" stroke="#121358" stroke-width="1.5" rx="2" />
+            </svg>
+          </div>
+
+          <ul class="vis-feature-list">
+            <li><i class="fa-solid fa-check"></i> <strong>100% Screen Utilization</strong>: Packs the entire container without wasted circular margins.</li>
+            <li><i class="fa-solid fa-check"></i> <strong>Direct Area Comparison</strong>: Compare disparate directories side-by-side by visual surface area.</li>
+            <li><i class="fa-solid fa-check"></i> <strong>Category Palette</strong>: Color-coded by directory type and sub-tree groupings.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Technical Specifications Table -->
+  <section id="specs" class="section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">Engineering Specifications</div>
+        <h2 class="section-title">Technical Architecture & Metrics</h2>
+        <p class="section-desc">Voltrex Light is compiled as a self-contained 64-bit Windows binary with zero third-party telemetry dependencies.</p>
+      </div>
+
+      <div class="specs-table-wrapper">
+        <table class="specs-table">
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>Specification</th>
+              <th>Technical Detail</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Runtime Environment</strong></td>
+              <td class="col-highlight">.NET 8.0 (net8.0-windows10.0.19041.0)</td>
+              <td>Modern C# with nullable reference types and high-throughput threadpool workers</td>
+            </tr>
+            <tr>
+              <td><strong>UI Framework</strong></td>
+              <td class="col-highlight">Windows App SDK 2.5.1 / WinUI 3</td>
+              <td>Native Windows 11 Fluent controls, Mica backdrop material, custom titlebars</td>
+            </tr>
+            <tr>
+              <td><strong>Target Platform</strong></td>
+              <td class="col-highlight">Windows 11 / Windows 10 (Build 19041+) x64</td>
+              <td>Optimized for 64-bit memory addressing across multi-terabyte arrays</td>
+            </tr>
+            <tr>
+              <td><strong>Traversal Precision</strong></td>
+              <td class="col-highlight">64-bit Exact Unsigned Arithmetic</td>
+              <td>Supports Standard Decimal (KB, MB, GB, TB) and IEC Binary (KiB, MiB, GiB, TiB)</td>
+            </tr>
+            <tr>
+              <td><strong>Cycle Protection</strong></td>
+              <td class="col-highlight">NTFS Reparse Tag Evaluation</td>
+              <td>Safely isolates symbolic links, directory junctions, and mount points</td>
+            </tr>
+            <tr>
+              <td><strong>Data Export</strong></td>
+              <td class="col-highlight">RFC 4180 CSV &amp; Hierarchical JSON v1.0</td>
+              <td>Export full volume reports for external auditing, spreadsheet analysis, or CI scripts</td>
+            </tr>
+            <tr>
+              <td><strong>Privacy &amp; Networking</strong></td>
+              <td class="col-highlight">100% Local / Zero Telemetry</td>
+              <td>Network access is used solely for optional user-initiated GitHub update checks</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Download Section -->
+  <section id="download" class="section download-section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">Release Packages</div>
+        <h2 class="section-title">Get Voltrex Light v1.0.0</h2>
+        <p class="section-desc">Download the installer for full Windows desktop integration, or the portable zip to run instantly without setup.</p>
+      </div>
+
+      <div class="download-grid">
+        <!-- Windows Setup (Recommended) -->
+        <div class="download-card featured">
+          <span class="download-card-tag">Recommended</span>
+          <div class="download-icon">
+            <i class="fa-brands fa-windows"></i>
+          </div>
+          <h3 class="download-title">Windows Installer</h3>
+          <div class="download-meta">voltrex-light-setup-1.0.0.exe</div>
+          <p class="download-desc">
+            Installs to your user profile without admin requirements. Adds Start Menu and optional Desktop shortcuts, and supports Windows Apps uninstall.
+          </p>
+          <a href="https://github.com/ziard47/voltrex-light/releases/download/v1.0.0/voltrex-light-setup-1.0.0.exe" class="btn btn-primary btn-lg" style="width: 100%;">
+            <i class="fa-solid fa-download"></i> Download Setup (.exe)
+          </a>
+        </div>
+
+        <!-- Portable ZIP -->
+        <div class="download-card">
+          <div class="download-icon">
+            <i class="fa-solid fa-box-archive"></i>
+          </div>
+          <h3 class="download-title">Portable Archive</h3>
+          <div class="download-meta">voltrex-light-v1.0.0-win-x64-portable.zip</div>
+          <p class="download-desc">
+            Self-contained zero-install archive. Extract anywhere to run immediately. Ideal for system administrators, technician thumbdrives, and sandboxes.
+          </p>
+          <a href="https://github.com/ziard47/voltrex-light/releases/download/v1.0.0/voltrex-light-v1.0.0-win-x64-portable.zip" class="btn btn-secondary btn-lg" style="width: 100%;">
+            <i class="fa-solid fa-download"></i> Download Portable (.zip)
+          </a>
+        </div>
+      </div>
+
+      <!-- Verification Checksum Box -->
+      <div class="checksum-box">
+        <div style="font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-shield"></i> SHA-256 Checksum Verification
+        </div>
+        <div class="checksum-row">
+          <span>voltrex-light-v1.0.0-win-x64-portable.zip</span>
+          <span style="color: var(--color-accent);">d8d0e72103a4092af306586fe2dbd67c035eefb82e6693ff0dd449f6d378389f</span>
+        </div>
+        <div style="color: var(--text-tertiary); font-size: 11px;">
+          View full checksum file at <a href="https://github.com/ziard47/voltrex-light/blob/main/dist/SHA256SUMS.txt" target="_blank" rel="noopener">SHA256SUMS.txt</a> or query <a href="https://raw.githubusercontent.com/ziard47/voltrex-light/main/version.json" target="_blank" rel="noopener">version.json</a>.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section id="faq" class="section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">Frequently Asked Questions</div>
+        <h2 class="section-title">Answers & Troubleshooting</h2>
+      </div>
+
+      <div class="faq-list">
+        <!-- Question 1 -->
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>How does Voltrex Light compare to WinDirStat or TreeSize?</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+          <div class="faq-answer">
+            WinDirStat is an unmaintained C++ codebase from the 2000s that frequently freezes on multi-terabyte SSDs and cannot handle modern Windows 11 high-DPI scaling. TreeSize is proprietary commercial software. Voltrex Light is modern, open-source, written natively in C#/.NET 8 with WinUI 3, uses non-blocking asynchronous traversal, provides both Sunburst and Treemap visualizations, and has zero telemetry.
+          </div>
+        </div>
+
+        <!-- Question 2 -->
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>Why is there a "Run as Admin" button in the titlebar?</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+          <div class="faq-answer">
+            Under Windows User Account Control (UAC), standard applications cannot read metadata inside protected system folders such as <code>C:\System Volume Information</code>, <code>C:\Windows\CSC</code>, or system-owned directories. Clicking "Run as Admin" safely restarts Voltrex Light with elevated privileges so every byte on the drive is accurately cataloged.
+          </div>
+        </div>
+
+        <!-- Question 3 -->
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>Does Voltrex Light collect any user telemetry or analytics?</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+          <div class="faq-answer">
+            <strong>No.</strong> Voltrex Light does not collect telemetry, crash diagnostics, or user analytics. All file scanning is strictly performed locally in memory on your PC. The only network request occurs when you manually click "Check for updates" in Settings, which retrieves the public GitHub <code>version.json</code> manifest.
+          </div>
+        </div>
+
+        <!-- Question 4 -->
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>How do in-app software updates work?</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+          <div class="faq-answer">
+            Voltrex Light includes an update manager in the Settings page. When an update is detected, an interactive modal displays the release notes, downloads the verified installer directly from GitHub Releases with live progress reporting, and prompts you to launch the setup file.
+          </div>
+        </div>
+
+        <!-- Question 5 -->
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>What are the minimum system requirements?</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+          <div class="faq-answer">
+            Voltrex Light requires a 64-bit (x64) processor running Windows 11 (any version) or Windows 10 Version 2004 (Build 19041) or higher. All required Windows App SDK and .NET runtimes are bundled self-contained inside the executable.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <img src="assets/voltrex_light_logo.png" width="28" height="28" alt="Logo" style="border-radius: 4px;">
+            <span style="font-weight: 700; font-size: 16px; color: var(--text-primary);">Voltrex Light</span>
+          </div>
+          <p style="color: var(--text-secondary); line-height: 1.6; max-width: 420px;">
+            A fast, native Windows 11 disk space analyzer and storage visualization suite. Designed with care for high-capacity SSDs and precision disk auditing.
+          </p>
+          <div style="color: var(--text-tertiary); font-size: 12px;">
+            Developed by <strong>mohomed Ziard | Voltrex Digital</strong>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <div class="footer-col-title">Navigation</div>
+          <ul class="footer-links">
+            <li><a href="#features">Features</a></li>
+            <li><a href="#visualizations">Visualizations</a></li>
+            <li><a href="#specs">Specifications</a></li>
+            <li><a href="#download">Download Release</a></li>
+            <li><a href="#faq">FAQ</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <div class="footer-col-title">Project &amp; Community</div>
+          <ul class="footer-links">
+            <li><a href="https://github.com/ziard47/voltrex-light" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i> GitHub Repository</a></li>
+            <li><a href="https://github.com/ziard47/voltrex-light/releases" target="_blank" rel="noopener"><i class="fa-solid fa-tag"></i> Releases &amp; Changelog</a></li>
+            <li><a href="https://github.com/ziard47/voltrex-light/issues" target="_blank" rel="noopener"><i class="fa-regular fa-circle-question"></i> Issue Tracker</a></li>
+            <li><a href="https://github.com/ziard47/voltrex-light/blob/main/LICENSE" target="_blank" rel="noopener"><i class="fa-solid fa-scale-balanced"></i> MIT License</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>
+          Copyright &copy; 2026 mohomed Ziard | Voltrex Digital. All rights reserved.
+        </div>
+        <div style="display: flex; gap: 16px;">
+          <a href="https://github.com/ziard47/voltrex-light" target="_blank" rel="noopener" style="color: var(--text-secondary);"><i class="fa-brands fa-github"></i></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- External Script -->
+  <script src="script.js"></script>
+</body>
+</html>

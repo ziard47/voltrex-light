@@ -2,7 +2,7 @@
   "version": "1.0.0",
   "releaseDate": "October 2026",
   "releaseNotes": "✨ Highlights in Voltrex Light 1.0.0:\n• Modern Windows 11 Fluent Design with translucent Mica backdrop.\n• Unified Storage Analysis combining volume and folder inspection.\n• Interactive Filelight-style Radial Sunburst and Squarified Treemap visualizations.\n• Direct Windows Explorer context menu with Recycle Bin and Permanent Delete.\n• Real-time throttled scanning indicators across titlebar, sidebar, and workspace.\n• High-precision 64-bit disk engine with junction and reparse cycle avoidance.\n• RFC 4180 CSV and hierarchical JSON scan report exports.\n• 100% private, local file processing with zero telemetry.",
-  "downloadUrl": "https://github.com/voltrexdigital/voltrex-light/releases/download/v1.0.0/voltrex-light-setup-1.0.0.exe",
+  "downloadUrl": "https://github.com/ziard47/voltrex-light/releases/download/v1.0.0/voltrex-light-setup-1.0.0.exe",
   "downloadSize": 89867259
 }
 

@@ -28,6 +28,43 @@ public class UpdateServiceTests
     }
 
     [TestMethod]
+    public void UpdateService_Endpoints_PointToCorrectRepository()
+    {
+        Assert.AreEqual("https://api.github.com/repos/ziard47/voltrex-light/releases/latest", UpdateService.GitHubReleasesApiUrl);
+        Assert.AreEqual("https://raw.githubusercontent.com/ziard47/voltrex-light/main/version.json", UpdateService.GitHubManifestFallbackUrl);
+    }
+
+    [TestMethod]
+    public async Task UpdateService_CheckForUpdates_ParsesGitHubReleaseResponse()
+    {
+        const string mockReleaseJson = @"{
+            ""tag_name"": ""v1.1.0"",
+            ""name"": ""Voltrex Light v1.1.0"",
+            ""published_at"": ""2026-11-01T12:00:00Z"",
+            ""body"": ""- Added new disk benchmark charts\n- Performance improvements"",
+            ""assets"": [
+                {
+                    ""name"": ""voltrex-light-setup-1.1.0.exe"",
+                    ""size"": 85000000,
+                    ""browser_download_url"": ""https://github.com/ziard47/voltrex-light/releases/download/v1.1.0/voltrex-light-setup-1.1.0.exe""
+                }
+            ]
+        }";
+
+        var handler = new MockHttpMessageHandler(mockReleaseJson);
+        var httpClient = new System.Net.Http.HttpClient(handler);
+        var updateService = new UpdateService(httpClient);
+
+        var updateInfo = await updateService.CheckForUpdatesAsync("1.0.0");
+
+        Assert.IsTrue(updateInfo.IsUpdateAvailable);
+        Assert.AreEqual("1.1.0", updateInfo.LatestVersion);
+        Assert.AreEqual("https://github.com/ziard47/voltrex-light/releases/download/v1.1.0/voltrex-light-setup-1.1.0.exe", updateInfo.DownloadUrl);
+        Assert.AreEqual(85000000, updateInfo.DownloadSizeBytes);
+        Assert.IsTrue(updateInfo.ReleaseNotes.Contains("Added new disk benchmark charts"));
+    }
+
+    [TestMethod]
     public void UpdateDownloadProgress_CalculatesPercentageCorrectly()
     {
         var progress = new UpdateDownloadProgress
@@ -179,6 +216,25 @@ public class UpdateServiceTests
         }
 
         public bool InstallUpdate(string installerPath) => true;
+    }
+
+    private class MockHttpMessageHandler : System.Net.Http.HttpMessageHandler
+    {
+        private readonly string _responseContent;
+
+        public MockHttpMessageHandler(string responseContent)
+        {
+            _responseContent = responseContent;
+        }
+
+        protected override Task<System.Net.Http.HttpResponseMessage> SendAsync(System.Net.Http.HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var response = new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new System.Net.Http.StringContent(_responseContent, System.Text.Encoding.UTF8, "application/json")
+            };
+            return Task.FromResult(response);
+        }
     }
 }
 
