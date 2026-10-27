@@ -31,6 +31,8 @@
     <Compile Include="..\..\Services\ExportService.cs" Link="Services\%(Filename)%(Extension)" />
     <Compile Include="..\..\Services\IScanHistoryService.cs" Link="Services\%(Filename)%(Extension)" />
     <Compile Include="..\..\Services\ScanHistoryService.cs" Link="Services\%(Filename)%(Extension)" />
+    <Compile Include="..\..\Services\IUpdateService.cs" Link="Services\%(Filename)%(Extension)" />
+    <Compile Include="..\..\Services\UpdateService.cs" Link="Services\%(Filename)%(Extension)" />
     <Compile Include="..\..\ViewModels\OverviewViewModel.cs" Link="ViewModels\%(Filename)%(Extension)" />
     <Compile Include="..\..\ViewModels\StorageAnalysisViewModel.cs" Link="ViewModels\%(Filename)%(Extension)" />
     <Compile Include="..\..\ViewModels\DriveAnalysisViewModel.cs" Link="ViewModels\%(Filename)%(Extension)" />

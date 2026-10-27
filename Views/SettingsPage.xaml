@@ -16,209 +16,422 @@
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </Page.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Padding="24,20,24,24" Spacing="24" MaxWidth="920" HorizontalAlignment="Left">
-            <!-- Header -->
-            <StackPanel Spacing="4">
-                <TextBlock Text="Settings" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="SemiBold" />
-                <TextBlock Text="Customize application appearance, visualization defaults, unit formats, and scan history."
-                           Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-            </StackPanel>
+    <Grid Background="Transparent">
+        <!-- Main Settings Scrollable Content -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Padding="24,20,24,24" Spacing="24" MaxWidth="920" HorizontalAlignment="Left">
+                <!-- Header -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Settings" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="SemiBold" />
+                    <TextBlock Text="Customize application appearance, visualization defaults, unit formats, and scan history."
+                               Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </StackPanel>
 
-            <!-- Preferences Section -->
-            <StackPanel Spacing="10">
-                <TextBlock Text="Preferences &amp; Display" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" />
+                <!-- Preferences Section -->
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Preferences &amp; Display" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" />
 
-                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
-                        CornerRadius="8" Padding="18,16">
-                    <StackPanel Spacing="18">
-                        <!-- Application Theme -->
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
+                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
+                            CornerRadius="8" Padding="18,16">
+                        <StackPanel Spacing="18">
+                            <!-- Application Theme -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
 
-                            <StackPanel Spacing="2">
-                                <TextBlock Text="Application Theme" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                <TextBlock Text="Choose Light, Dark, or automatically match your Windows system preference."
-                                           Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            </StackPanel>
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="Application Theme" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                    <TextBlock Text="Choose Light, Dark, or automatically match your Windows system preference."
+                                               Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                </StackPanel>
 
-                            <ComboBox Grid.Column="1" Width="180" VerticalAlignment="Center"
-                                      ItemsSource="{x:Bind ViewModel.AvailableThemes}"
-                                      SelectedItem="{x:Bind ViewModel.SelectedTheme, Mode=TwoWay}" />
-                        </Grid>
+                                <ComboBox Grid.Column="1" Width="180" VerticalAlignment="Center"
+                                          ItemsSource="{x:Bind ViewModel.AvailableThemes}"
+                                          SelectedItem="{x:Bind ViewModel.SelectedTheme, Mode=TwoWay}" />
+                            </Grid>
 
-                        <MenuFlyoutSeparator />
+                            <MenuFlyoutSeparator />
 
-                        <!-- Default Visualization -->
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
+                            <!-- Default Visualization -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
 
-                            <StackPanel Spacing="2">
-                                <TextBlock Text="Default Visualization" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                <TextBlock Text="Preferred visualizer mode loaded upon completing volume and directory scans."
-                                           Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            </StackPanel>
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="Default Visualization" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                    <TextBlock Text="Preferred visualizer mode loaded upon completing volume and directory scans."
+                                               Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                </StackPanel>
 
-                            <ComboBox Grid.Column="1" Width="180" VerticalAlignment="Center"
-                                      ItemsSource="{x:Bind ViewModel.AvailableVisualizations}"
-                                      SelectedItem="{x:Bind ViewModel.SelectedVisualization, Mode=TwoWay}" />
-                        </Grid>
+                                <ComboBox Grid.Column="1" Width="180" VerticalAlignment="Center"
+                                          ItemsSource="{x:Bind ViewModel.AvailableVisualizations}"
+                                          SelectedItem="{x:Bind ViewModel.SelectedVisualization, Mode=TwoWay}" />
+                            </Grid>
 
-                        <MenuFlyoutSeparator />
+                            <MenuFlyoutSeparator />
 
-                        <!-- Size Display Units -->
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
+                            <!-- Size Display Units -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
 
-                            <StackPanel Spacing="2">
-                                <TextBlock Text="Size Unit Convention" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                <TextBlock Text="Standard decimal notation (KB, MB, GB, TB) or IEC binary notation (KiB, MiB, GiB, TiB)."
-                                           Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            </StackPanel>
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="Size Unit Convention" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                    <TextBlock Text="Standard decimal notation (KB, MB, GB, TB) or IEC binary notation (KiB, MiB, GiB, TiB)."
+                                               Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                </StackPanel>
 
-                            <ComboBox Grid.Column="1" Width="180" VerticalAlignment="Center"
-                                      ItemsSource="{x:Bind ViewModel.AvailableSizeUnits}"
-                                      SelectedItem="{x:Bind ViewModel.SelectedSizeUnit, Mode=TwoWay}" />
-                        </Grid>
-                    </StackPanel>
-                </Border>
-            </StackPanel>
-
-            <!-- Scan History Section -->
-            <StackPanel Spacing="10">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-
-                    <TextBlock Text="Scan History &amp; Diagnostics" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" VerticalAlignment="Center" />
-
-                    <Button Grid.Column="1" Command="{x:Bind ViewModel.ClearHistoryCommand}"
-                            Visibility="{x:Bind ViewModel.HasHistory, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            ToolTipService.ToolTip="Clear all recorded scan history entries">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <FontIcon Glyph="&#xE74D;" FontSize="12" />
-                            <TextBlock Text="Clear History" FontSize="12" />
+                                <ComboBox Grid.Column="1" Width="180" VerticalAlignment="Center"
+                                          ItemsSource="{x:Bind ViewModel.AvailableSizeUnits}"
+                                          SelectedItem="{x:Bind ViewModel.SelectedSizeUnit, Mode=TwoWay}" />
+                            </Grid>
                         </StackPanel>
-                    </Button>
-                </Grid>
+                    </Border>
+                </StackPanel>
 
-                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
-                        CornerRadius="8" Padding="14">
-                    <StackPanel Spacing="10">
-                        <ListView ItemsSource="{x:Bind ViewModel.HistoryItems, Mode=OneWay}"
-                                  Visibility="{x:Bind ViewModel.HasHistory, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                  MaxHeight="260" SelectionMode="None">
-                            <ListView.ItemTemplate>
-                                <DataTemplate x:DataType="models:ScanHistoryItem">
-                                    <Grid ColumnSpacing="12" Padding="0,6">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
+                <!-- Scan History Section -->
+                <StackPanel Spacing="10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
 
-                                        <FontIcon Grid.Column="0" Glyph="&#xEDA2;" FontSize="14" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="Scan History &amp; Diagnostics" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" VerticalAlignment="Center" />
 
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                            <TextBlock Text="{x:Bind RootPath}" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-                                            <TextBlock Text="{x:Bind FormattedTimestamp}" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" FontSize="10" />
-                                        </StackPanel>
+                        <Button Grid.Column="1" Command="{x:Bind ViewModel.ClearHistoryCommand}"
+                                Visibility="{x:Bind ViewModel.HasHistory, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                ToolTipService.ToolTip="Clear all recorded scan history entries">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <FontIcon Glyph="&#xE74D;" FontSize="12" />
+                                <TextBlock Text="Clear History" FontSize="12" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
 
-                                        <Border Grid.Column="2" Background="{ThemeResource LayerFillColorDefaultBrush}" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
-                                            <TextBlock Text="{x:Bind StatusBadge}" Style="{ThemeResource CaptionTextBlockStyle}" FontSize="10" />
+                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
+                            CornerRadius="8" Padding="14">
+                        <StackPanel Spacing="10">
+                            <ListView ItemsSource="{x:Bind ViewModel.HistoryItems, Mode=OneWay}"
+                                      Visibility="{x:Bind ViewModel.HasHistory, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                      MaxHeight="260" SelectionMode="None">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate x:DataType="models:ScanHistoryItem">
+                                        <Grid ColumnSpacing="12" Padding="0,6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <FontIcon Grid.Column="0" Glyph="&#xEDA2;" FontSize="14" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center" />
+
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock Text="{x:Bind RootPath}" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{x:Bind FormattedTimestamp}" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" FontSize="10" />
+                                            </StackPanel>
+
+                                            <Border Grid.Column="2" Background="{ThemeResource LayerFillColorDefaultBrush}" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+                                                <TextBlock Text="{x:Bind StatusBadge}" Style="{ThemeResource CaptionTextBlockStyle}" FontSize="10" />
+                                            </Border>
+
+                                            <TextBlock Grid.Column="3" Text="{x:Bind FormattedTotalBytes}" Style="{ThemeResource CaptionTextBlockStyle}"
+                                                       FontWeight="SemiBold" VerticalAlignment="Center" MinWidth="70" TextAlignment="Right" />
+
+                                            <TextBlock Grid.Column="4" Text="{x:Bind TotalFilesCount}" Style="{ThemeResource CaptionTextBlockStyle}"
+                                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" MinWidth="80" TextAlignment="Right" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+
+                            <!-- Empty State -->
+                            <StackPanel Visibility="{x:Bind ViewModel.HasHistory, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Inverse}"
+                                        HorizontalAlignment="Center" Spacing="8" Margin="0,16,0,16">
+                                <FontIcon Glyph="&#xE81C;" FontSize="32" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center" />
+                                <TextBlock Text="No previous scans recorded" Style="{ThemeResource BodyStrongTextBlockStyle}" HorizontalAlignment="Center" />
+                                <TextBlock Text="Recent scan summaries will appear here as you analyze disks and folders."
+                                           Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- About Voltrex Light Section (Ultra-Clean, Fluent Design) -->
+                <StackPanel Spacing="10">
+                    <TextBlock Text="About" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" />
+
+                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
+                            CornerRadius="10" Padding="20,18">
+                        <StackPanel Spacing="18">
+                            <!-- Hero Brand Header: Logo, Name, Version, Description & Author -->
+                            <Grid ColumnSpacing="18">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <!-- App Logo with Refined Container -->
+                                <Border Grid.Column="0" Width="60" Height="60" CornerRadius="14"
+                                        Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
+                                        VerticalAlignment="Top">
+                                    <Image Source="ms-appx:///Assets/voltrex_light_logo.png" Stretch="UniformToFill" />
+                                </Border>
+
+                                <!-- Title, Version, Description & Attribution -->
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                                    <!-- App Name & Version Pill -->
+                                    <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                        <TextBlock Text="{x:Bind ViewModel.AppName}" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="Bold" FontSize="19" />
+                                        <Border Background="{ThemeResource LayerFillColorAltBrush}"
+                                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                BorderThickness="1" CornerRadius="10" Padding="8,2" VerticalAlignment="Center">
+                                            <TextBlock Text="{x:Bind ViewModel.AppVersion}" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                         </Border>
+                                    </StackPanel>
 
-                                        <TextBlock Grid.Column="3" Text="{x:Bind FormattedTotalBytes}" Style="{ThemeResource CaptionTextBlockStyle}"
-                                                   FontWeight="SemiBold" VerticalAlignment="Center" MinWidth="70" TextAlignment="Right" />
+                                    <!-- Concise Description -->
+                                    <TextBlock Text="{x:Bind ViewModel.AppDescription}"
+                                               Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                               FontSize="13" TextWrapping="Wrap" />
 
-                                        <TextBlock Grid.Column="4" Text="{x:Bind TotalFilesCount}" Style="{ThemeResource CaptionTextBlockStyle}"
-                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" MinWidth="80" TextAlignment="Right" />
-                                    </Grid>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
+                                    <!-- Developer Attribution -->
+                                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="0,2,0,0">
+                                        <TextBlock Text="Developed by" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" FontSize="12" />
+                                        <TextBlock Text="mohomed Ziard" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}" FontSize="12" />
+                                        <TextBlock Text="•" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" FontSize="12" />
+                                        <TextBlock Text="Voltrex Digital" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="Medium" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" FontSize="12" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
 
-                        <!-- Empty State -->
-                        <StackPanel Visibility="{x:Bind ViewModel.HasHistory, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Inverse}"
-                                    HorizontalAlignment="Center" Spacing="8" Margin="0,16,0,16">
-                            <FontIcon Glyph="&#xE81C;" FontSize="32" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center" />
-                            <TextBlock Text="No previous scans recorded" Style="{ThemeResource BodyStrongTextBlockStyle}" HorizontalAlignment="Center" />
-                            <TextBlock Text="Recent scan summaries will appear here as you analyze disks and folders."
-                                       Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
-            </StackPanel>
+                            <!-- Integrated Updates Action Bar (Inset Fluent Tile) -->
+                            <Border Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
+                                    CornerRadius="8" Padding="16,12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
 
-            <!-- About Voltrex Light Section -->
-            <StackPanel Spacing="10">
-                <TextBlock Text="About Voltrex Light" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" />
+                                    <!-- Update Icon Glyph in Rounded Badge -->
+                                    <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8"
+                                            Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
+                                            VerticalAlignment="Center">
+                                        <FontIcon Glyph="&#xE895;" FontSize="15" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                                  HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
 
-                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
-                        CornerRadius="8" Padding="18,18">
-                    <StackPanel Spacing="14">
-                        <StackPanel Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
-                            <Border Width="52" Height="52" CornerRadius="10">
-                                <Image Source="ms-appx:///Assets/voltrex_light_logo.png" Stretch="UniformToFill" />
+                                    <!-- Text Description -->
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,16,0" Spacing="2">
+                                        <TextBlock Text="Software Updates" Style="{ThemeResource BodyStrongTextBlockStyle}" FontSize="13" />
+                                        <TextBlock Text="Keep Voltrex Light up to date with the latest features and performance enhancements."
+                                                   Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" />
+                                    </StackPanel>
+
+                                    <!-- Actions: Release Notes & Check for Updates -->
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                        <Button Command="{x:Bind ViewModel.OpenReleaseNotesCommand}"
+                                                Style="{ThemeResource SubtleButtonStyle}"
+                                                Padding="12,6" CornerRadius="6" VerticalAlignment="Center"
+                                                ToolTipService.ToolTip="View changelog and release notes">
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <FontIcon Glyph="&#xE9F9;" FontSize="12" />
+                                                <TextBlock Text="Release notes" FontSize="12" />
+                                            </StackPanel>
+                                        </Button>
+
+                                        <Button Command="{x:Bind ViewModel.CheckForUpdatesCommand}"
+                                                IsEnabled="{x:Bind ViewModel.CanCheckForUpdates, Mode=OneWay}"
+                                                Style="{ThemeResource AccentButtonStyle}"
+                                                Padding="14,6" CornerRadius="6" VerticalAlignment="Center"
+                                                ToolTipService.ToolTip="Check for newer versions of Voltrex Light">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <ProgressRing Visibility="{x:Bind ViewModel.IsCheckingForUpdates, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                              IsActive="{x:Bind ViewModel.IsCheckingForUpdates, Mode=OneWay}" Width="14" Height="14" Foreground="White" />
+                                                <FontIcon Glyph="&#xE895;" FontSize="12"
+                                                          Visibility="{x:Bind ViewModel.IsCheckingForUpdates, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Inverse}" />
+                                                <TextBlock Text="Check for updates" FontSize="12" FontWeight="SemiBold" />
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                </Grid>
                             </Border>
-                            <StackPanel Spacing="2">
-                                <TextBlock Text="Voltrex Light" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" FontSize="18" />
-                                <TextBlock Text="developed by mohomed Ziard | Voltrex Digital" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" FontWeight="SemiBold" />
-                            </StackPanel>
                         </StackPanel>
-
-                        <TextBlock Text="High-performance native Windows disk space analyzer &amp; visualization suite. Engineered natively with .NET 8, WinUI 3, Windows App SDK, and modern Windows 11 Fluent Design."
-                                   Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
-
-                        <StackPanel Spacing="8" Margin="0,4,0,0">
-                            <Grid>
-                                <TextBlock Text="Developer" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
-                                <TextBlock Text="mohomed Ziard | Voltrex Digital" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" HorizontalAlignment="Right" />
-                            </Grid>
-                            <Grid>
-                                <TextBlock Text="Administrator Access" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
-                                <TextBlock Text="Full Administrator (UAC Enabled)" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Right" />
-                            </Grid>
-                            <Grid>
-                                <TextBlock Text="Version" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
-                                <TextBlock Text="{x:Bind ViewModel.AppVersion}" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" HorizontalAlignment="Right" />
-                            </Grid>
-                            <Grid>
-                                <TextBlock Text="Architecture" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
-                                <TextBlock Text="{x:Bind ViewModel.Architecture}" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" HorizontalAlignment="Right" />
-                            </Grid>
-                            <Grid>
-                                <TextBlock Text="Runtime Framework" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
-                                <TextBlock Text="{x:Bind ViewModel.FrameworkVersion}" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" HorizontalAlignment="Right" />
-                            </Grid>
-                            <Grid>
-                                <TextBlock Text="Operating System" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
-                                <TextBlock Text="{x:Bind ViewModel.OsVersion}" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" HorizontalAlignment="Right" />
-                            </Grid>
-                            <Grid>
-                                <TextBlock Text="Windows 11 Visual Effects" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
-                                <TextBlock Text="Mica Alt Translucent Material Active" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Right" />
-                            </Grid>
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
+                    </Border>
+                </StackPanel>
             </StackPanel>
-        </StackPanel>
-    </ScrollViewer>
+        </ScrollViewer>
+
+        <!-- Redesigned Update Modal Dialog Overlay with Release Notes -->
+        <Grid x:Name="UpdateModalOverlay"
+              Visibility="{x:Bind ViewModel.IsUpdateModalOpen, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+              Background="#99000000"
+              HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+
+            <!-- Centered Modal Dialog Card (Solid, Non-Transparent) -->
+            <Border Width="520" MaxHeight="580"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Padding="24,20"
+                    Translation="0,0,32">
+                <Grid RowSpacing="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />  <!-- Header: Icon, Title, Close Button -->
+                        <RowDefinition Height="Auto" />  <!-- Version Status Banner -->
+                        <RowDefinition Height="*" />     <!-- Scrollable Release Notes -->
+                        <RowDefinition Height="Auto" />  <!-- Downloading Progress (if active) -->
+                        <RowDefinition Height="Auto" />  <!-- Footer Action Buttons -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Row 0: Modal Header -->
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Width="40" Height="40" CornerRadius="8"
+                                Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
+                                VerticalAlignment="Center">
+                            <Image Source="ms-appx:///Assets/voltrex_light_logo.png" Stretch="UniformToFill" />
+                        </Border>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0,0,0" Spacing="2">
+                            <TextBlock Text="{x:Bind ViewModel.ModalTitle, Mode=OneWay}" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" FontSize="16" />
+                            <TextBlock Text="{x:Bind ViewModel.ModalSubtitle, Mode=OneWay}" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" />
+                        </StackPanel>
+
+                        <Button Grid.Column="2" Command="{x:Bind ViewModel.CloseUpdateModalCommand}"
+                                Style="{ThemeResource SubtleButtonStyle}" Padding="6,6" CornerRadius="4"
+                                VerticalAlignment="Top" ToolTipService.ToolTip="Close">
+                            <FontIcon Glyph="&#xE711;" FontSize="12" />
+                        </Button>
+                    </Grid>
+
+                    <!-- Row 1: Version Comparison Banner -->
+                    <Border Grid.Row="1" Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
+                            CornerRadius="8" Padding="14,10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel VerticalAlignment="Center" Spacing="2">
+                                <TextBlock Text="{x:Bind ViewModel.VersionTagText, Mode=OneWay}" FontWeight="SemiBold" FontSize="13" />
+                                <TextBlock Text="{x:Bind ViewModel.ReleaseDateText, Mode=OneWay}" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" FontSize="11" />
+                            </StackPanel>
+
+                            <!-- Latest Version Tag (when up to date) -->
+                            <Border Grid.Column="1" Background="{ThemeResource SystemFillColorSuccessBackgroundBrush}"
+                                    BorderBrush="{ThemeResource SystemFillColorSuccessBrush}" BorderThickness="1"
+                                    CornerRadius="4" Padding="8,2" VerticalAlignment="Center"
+                                    Visibility="{x:Bind ViewModel.IsUpToDate, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <FontIcon Glyph="&#xE73E;" FontSize="11" Foreground="{ThemeResource SystemFillColorSuccessBrush}" />
+                                    <TextBlock Text="Up to date" Foreground="{ThemeResource SystemFillColorSuccessBrush}" FontSize="11" FontWeight="SemiBold" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Update Ready Tag (when update available) -->
+                            <Border Grid.Column="1" Background="{ThemeResource AccentFillColorDefaultBrush}"
+                                    CornerRadius="4" Padding="8,2" VerticalAlignment="Center"
+                                    Visibility="{x:Bind ViewModel.IsUpdateAvailable, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <TextBlock Text="Update Ready" Foreground="White" FontSize="11" FontWeight="SemiBold" />
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- Row 2: Scrollable Release Notes -->
+                    <Grid Grid.Row="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Text="Release Notes" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,0,6" />
+
+                        <Border Grid.Row="1" Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
+                                CornerRadius="8" Padding="14,12" MaxHeight="220">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <TextBlock Text="{x:Bind ViewModel.ModalReleaseNotes, Mode=OneWay}"
+                                           Style="{ThemeResource BodyTextBlockStyle}"
+                                           FontSize="12"
+                                           LineHeight="20"
+                                           TextWrapping="Wrap" />
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+
+                    <!-- Row 3: Downloading Progress Bar (when active) -->
+                    <StackPanel Grid.Row="3" Spacing="6"
+                                Visibility="{x:Bind ViewModel.IsDownloading, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid>
+                            <TextBlock Text="{x:Bind ViewModel.UpdateStatusMessage, Mode=OneWay}" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" />
+                            <TextBlock Text="{x:Bind ViewModel.DownloadProgressText, Mode=OneWay}" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Right" />
+                        </Grid>
+                        <ProgressBar Value="{x:Bind ViewModel.DownloadProgress, Mode=OneWay}" Maximum="100" Height="6" CornerRadius="3" />
+                    </StackPanel>
+
+                    <!-- Row 4: Action Buttons Footer -->
+                    <Grid Grid.Row="4" ColumnSpacing="10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Left: Status Info / Error -->
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="{x:Bind ViewModel.UpdateStatusMessage, Mode=OneWay}"
+                                       Style="{ThemeResource CaptionTextBlockStyle}"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       TextTrimming="CharacterEllipsis" FontSize="11" />
+                        </StackPanel>
+
+                        <!-- Close Button -->
+                        <Button Grid.Column="1" Command="{x:Bind ViewModel.CloseUpdateModalCommand}"
+                                Content="Close" Style="{ThemeResource DefaultButtonStyle}"
+                                Padding="16,6" CornerRadius="6" VerticalAlignment="Center" />
+
+                        <!-- Primary Action Button (Download & Install / Restart & Install) -->
+                        <Button Grid.Column="2" Command="{x:Bind ViewModel.ModalPrimaryActionCommand}"
+                                IsEnabled="{x:Bind ViewModel.IsModalPrimaryButtonEnabled, Mode=OneWay}"
+                                Visibility="{x:Bind ViewModel.ShowModalPrimaryButton, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                Style="{ThemeResource AccentButtonStyle}" Padding="16,6" CornerRadius="6" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <FontIcon Glyph="{x:Bind ViewModel.ModalPrimaryButtonIcon, Mode=OneWay}" FontSize="12" />
+                                <TextBlock Text="{x:Bind ViewModel.ModalPrimaryButtonText, Mode=OneWay}" FontWeight="SemiBold" FontSize="12" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
 </Page>
+

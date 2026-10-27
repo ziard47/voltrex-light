@@ -16,6 +16,7 @@ public static class AppServices
     private static INavigationService? _navigationService;
     private static IExportService? _exportService;
     private static IScanHistoryService? _scanHistoryService;
+    private static IUpdateService? _updateService;
 
     public static IDriveService DriveService => _driveService ??= new DriveService();
     public static ISettingsService SettingsService => _settingsService ??= new SettingsService();
@@ -43,6 +44,7 @@ public static class AppServices
     public static INavigationService NavigationService => _navigationService ??= new NavigationService();
     public static IExportService ExportService => _exportService ??= new ExportService();
     public static IScanHistoryService ScanHistoryService => _scanHistoryService ??= new ScanHistoryService();
+    public static IUpdateService UpdateService => _updateService ??= new UpdateService();
 
     private static MainViewModel? _mainViewModel;
     private static OverviewViewModel? _overviewViewModel;
@@ -58,7 +60,7 @@ public static class AppServices
     public static DriveAnalysisViewModel DriveAnalysisViewModel => _driveAnalysisViewModel ??= new DriveAnalysisViewModel(ScanService);
     public static FolderAnalysisViewModel FolderAnalysisViewModel => _folderAnalysisViewModel ??= new FolderAnalysisViewModel(ScanService);
     public static LargestFilesViewModel LargestFilesViewModel => _largestFilesViewModel ??= new LargestFilesViewModel(ScanService, NavigationService);
-    public static SettingsViewModel SettingsViewModel => _settingsViewModel ??= new SettingsViewModel(SettingsService, ScanHistoryService);
+    public static SettingsViewModel SettingsViewModel => _settingsViewModel ??= new SettingsViewModel(SettingsService, ScanHistoryService, UpdateService);
 
     /// <summary>
     /// Injects custom service implementations (e.g. for unit testing).
@@ -70,7 +72,8 @@ public static class AppServices
         IFolderPickerService? folderPickerService = null,
         INavigationService? navigationService = null,
         IExportService? exportService = null,
-        IScanHistoryService? scanHistoryService = null)
+        IScanHistoryService? scanHistoryService = null,
+        IUpdateService? updateService = null)
     {
         if (driveService != null) _driveService = driveService;
         if (settingsService != null) _settingsService = settingsService;
@@ -79,6 +82,7 @@ public static class AppServices
         if (navigationService != null) _navigationService = navigationService;
         if (exportService != null) _exportService = exportService;
         if (scanHistoryService != null) _scanHistoryService = scanHistoryService;
+        if (updateService != null) _updateService = updateService;
     }
 }
 

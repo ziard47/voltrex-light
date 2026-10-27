@@ -14,7 +14,7 @@
   <img src="https://img.shields.io/badge/WinUI-3-0078D7.svg" alt="WinUI 3" />
   <img src="https://img.shields.io/badge/Windows%20App%20SDK-2.5.1-512BD4.svg" alt="Windows App SDK" />
   <img src="https://img.shields.io/badge/Platform-Windows%2011%20%7C%20x64-00A4EF.svg" alt="Platform x64" />
-  <img src="https://img.shields.io/badge/Tests-57%20Passed-brightgreen.svg" alt="Unit Tests" />
+  <img src="https://img.shields.io/badge/Tests-64%20Passed-brightgreen.svg" alt="Unit Tests" />
   <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License" />
 </p>
 
@@ -135,7 +135,8 @@ voltrex-light/
 │   ├── NavigationService.cs       # Page routing & parameter passing
 │   ├── ScanHistoryService.cs      # Persistent scan history management
 │   ├── ScanService.cs             # Recursive, asynchronous file scanning engine
-│   └── SettingsService.cs         # Settings serialization & theme management
+│   ├── SettingsService.cs         # Settings serialization & theme management
+│   └── UpdateService.cs           # Update checking, downloading & installation engine
 ├── ViewModels/                    # MVVM ViewModels
 │   ├── MainViewModel.cs           # Root window, titlebar & sidebar logic
 │   ├── OverviewViewModel.cs       # System drives dashboard
