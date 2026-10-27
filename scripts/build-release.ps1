@@ -33,6 +33,17 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "[OK] Published to bin\Release\net8.0-windows10.0.19041.0\win-x64\publish" -ForegroundColor Green
 
 $publishDir = "$repoRoot\bin\Release\net8.0-windows10.0.19041.0\win-x64\publish"
+
+# Ensure WinUI 3 unpackaged resource files are present in the publish directory
+$targetPri = "$repoRoot\bin\x64\Release\net8.0-windows10.0.19041.0\win-x64\voltrex-light.pri"
+if (Test-Path $targetPri) {
+    Copy-Item $targetPri "$publishDir\resources.pri" -Force
+    Copy-Item $targetPri "$publishDir\voltrex-light.pri" -Force
+}
+if (Test-Path "$repoRoot\Assets") {
+    Copy-Item "$repoRoot\Assets" "$publishDir\Assets" -Recurse -Force
+}
+
 $distDir = "$repoRoot\dist"
 if (!(Test-Path $distDir)) {
     New-Item -ItemType Directory -Path $distDir -Force | Out-Null

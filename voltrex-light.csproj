@@ -24,15 +24,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="Assets\SplashScreen.scale-200.png" />
-    <Content Include="Assets\LockScreenLogo.scale-200.png" />
-    <Content Include="Assets\Square150x150Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
-    <Content Include="Assets\StoreLogo.png" />
-    <Content Include="Assets\Wide310x150Logo.scale-200.png" />
-    <Content Include="Assets\voltrex_light_logo.png" />
-    <Content Include="Assets\app.ico" />
+    <Content Include="Assets\SplashScreen.scale-200.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\LockScreenLogo.scale-200.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\Square150x150Logo.scale-200.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\Square44x44Logo.scale-200.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\StoreLogo.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\Wide310x150Logo.scale-200.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\voltrex_light_logo.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\app.ico" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
@@ -51,4 +51,14 @@
     <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
     <PublishTrimmed>False</PublishTrimmed>
   </PropertyGroup>
+
+  <!-- Ensure WinUI 3 unpackaged runtime resources and PRI files are present in the publish folder -->
+  <Target Name="CopyPriAndAssetsToPublishDir" AfterTargets="Publish">
+    <Copy SourceFiles="$(TargetDir)$(TargetName).pri" DestinationFiles="$(PublishDir)resources.pri" Condition="Exists('$(TargetDir)$(TargetName).pri')" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(TargetDir)$(TargetName).pri" DestinationFiles="$(PublishDir)$(TargetName).pri" Condition="Exists('$(TargetDir)$(TargetName).pri')" SkipUnchangedFiles="true" />
+    <ItemGroup>
+      <_PublishAssets Include="Assets\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_PublishAssets)" DestinationFolder="$(PublishDir)Assets\%(RecursiveDir)" SkipUnchangedFiles="true" />
+  </Target>
 </Project>
