@@ -1,0 +1,74 @@
+name: Release Packaging & Publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version tag (e.g. 1.0.0)'
+        required: true
+        default: '1.0.0'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore voltrex-light.slnx
+
+      - name: Run Unit Tests
+        run: dotnet test tests/voltrex-light.Tests/voltrex-light.Tests.csproj -c Release --no-restore
+
+      - name: Publish Self-Contained WinUI 3 (x64)
+        run: dotnet publish voltrex-light.csproj -c Release -p:Platform=x64 -nr:false
+
+      - name: Compile Inno Setup Installer
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\voltrex-light.iss
+
+      - name: Create Portable ZIP Archive
+        shell: pwsh
+        run: |
+          $publishDir = "bin\Release\net8.0-windows10.0.19041.0\win-x64\publish"
+          $distDir = "dist"
+          if (!(Test-Path $distDir)) { New-Item -ItemType Directory -Path $distDir -Force }
+          $zipPath = "$distDir\voltrex-light-v${{ github.ref_name || inputs.version }}-win-x64-portable.zip"
+          Compress-Archive -Path "$publishDir\*" -DestinationPath $zipPath -CompressionLevel Optimal
+
+      - name: Generate SHA256 Checksums
+        shell: pwsh
+        run: |
+          $distDir = "dist"
+          $checksumFile = "$distDir\SHA256SUMS.txt"
+          $files = Get-ChildItem -Path $distDir -File | Where-Object { $_.Name -ne "SHA256SUMS.txt" }
+          $hashes = foreach ($f in $files) {
+              $hash = (Get-FileHash -Path $f.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+              "$hash  $($f.Name)"
+          }
+          $hashes | Out-File -FilePath $checksumFile -Encoding utf8 -Force
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            dist/*
+            version.json
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+
