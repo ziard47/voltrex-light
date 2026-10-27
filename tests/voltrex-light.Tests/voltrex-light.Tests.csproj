@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>voltrex_light.Tests</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <DefineConstants>$(DefineConstants);TESTING</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0-preview-24080-01" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.1.1" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Helpers\*.cs" Link="Helpers\%(Filename)%(Extension)" />
+    <Compile Include="..\..\Models\*.cs" Link="Models\%(Filename)%(Extension)" />
+    <Compile Include="..\..\Services\IDriveService.cs" Link="Services\%(Filename)%(Extension)" />
+    <Compile Include="..\..\Services\DriveService.cs" Link="Services\%(Filename)%(Extension)" />
+    <Compile Include="..\..\Services\IScanService.cs" Link="Services\%(Filename)%(Extension)" />
+    <Compile Include="..\..\Services\ScanService.cs" Link="Services\%(Filename)%(Extension)" />
+    <Compile Include="..\..\Services\ISettingsService.cs" Link="Services\%(Filename)%(Extension)" />
+    <Compile Include="..\..\Services\SettingsService.cs" Link="Services\%(Filename)%(Extension)" />
+    <Compile Include="..\..\Services\IFolderPickerService.cs" Link="Services\%(Filename)%(Extension)" />
+    <Compile Include="..\..\Services\INavigationService.cs" Link="Services\%(Filename)%(Extension)" />
+    <Compile Include="..\..\Services\IExportService.cs" Link="Services\%(Filename)%(Extension)" />
+    <Compile Include="..\..\Services\ExportService.cs" Link="Services\%(Filename)%(Extension)" />
+    <Compile Include="..\..\Services\IScanHistoryService.cs" Link="Services\%(Filename)%(Extension)" />
+    <Compile Include="..\..\Services\ScanHistoryService.cs" Link="Services\%(Filename)%(Extension)" />
+    <Compile Include="..\..\ViewModels\OverviewViewModel.cs" Link="ViewModels\%(Filename)%(Extension)" />
+    <Compile Include="..\..\ViewModels\StorageAnalysisViewModel.cs" Link="ViewModels\%(Filename)%(Extension)" />
+    <Compile Include="..\..\ViewModels\DriveAnalysisViewModel.cs" Link="ViewModels\%(Filename)%(Extension)" />
+    <Compile Include="..\..\ViewModels\FolderAnalysisViewModel.cs" Link="ViewModels\%(Filename)%(Extension)" />
+    <Compile Include="..\..\ViewModels\LargestFilesViewModel.cs" Link="ViewModels\%(Filename)%(Extension)" />
+    <Compile Include="..\..\ViewModels\SettingsViewModel.cs" Link="ViewModels\%(Filename)%(Extension)" />
+    <Compile Include="..\..\Visualizations\Models\*.cs" Link="Visualizations\Models\%(Filename)%(Extension)" />
+    <Compile Include="..\..\Visualizations\Engines\*.cs" Link="Visualizations\Engines\%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+  </ItemGroup>
+
+</Project>
+

@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "voltrex-light (Unpackaged)": {
+      "commandName": "Project"
+    },
+    "voltrex-light (Package)": {
+      "commandName": "Project"
+    }
+  }
+}
+}

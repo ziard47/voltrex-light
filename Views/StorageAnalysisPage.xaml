@@ -1,0 +1,593 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Name="StorageAnalysisPageRoot"
+    x:Class="voltrex_light.Views.StorageAnalysisPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:voltrex_light.Models"
+    xmlns:viewmodels="using:voltrex_light.ViewModels"
+    xmlns:viz="using:voltrex_light.Visualizations.Controls"
+    mc:Ignorable="d"
+    Background="Transparent"
+    SizeChanged="OnPageSizeChanged">
+
+    <Grid x:Name="RootLayoutGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Subheader & Interactive Navigation Bar -->
+        <Border Grid.Row="0" Background="{ThemeResource LayerFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="0,0,0,1"
+                Padding="16,8">
+            <Grid ColumnSpacing="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Navigation Controls: Up Button & Folder Picker -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <Button Command="{x:Bind ViewModel.NavigateUpCommand}"
+                            ToolTipService.ToolTip="Navigate to parent folder (Backspace / Alt+Up)">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon Glyph="&#xE70E;" FontSize="13" />
+                            <TextBlock Text="Up" FontSize="12" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button Command="{x:Bind ViewModel.PickFolderCommand}"
+                            ToolTipService.ToolTip="Select a different folder or drive to analyze">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon Glyph="&#xE8F4;" FontSize="13" />
+                            <TextBlock Text="Target..." FontSize="12" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <!-- Interactive Breadcrumb Trail -->
+                <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled"
+                              HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled" VerticalAlignment="Center" Margin="6,0">
+                    <ItemsControl ItemsSource="{x:Bind ViewModel.BreadcrumbNodes, Mode=OneWay}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="models:FileSystemNode">
+                                <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                    <Button Content="{x:Bind Name}" Padding="6,4" FontSize="12"
+                                            Background="Transparent" BorderThickness="0"
+                                            Command="{Binding ElementName=StorageAnalysisPageRoot, Path=ViewModel.NavigateToBreadcrumbCommand}"
+                                            CommandParameter="{x:Bind}"
+                                            ToolTipService.ToolTip="{x:Bind FullPath}" />
+                                    <FontIcon Glyph="&#xE76C;" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <!-- Filter Box -->
+                <TextBox Grid.Column="2" x:Name="SearchFilterBox"
+                         PlaceholderText="Filter (Ctrl+F)..." Width="180"
+                         Text="{x:Bind ViewModel.FilterQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                <!-- Toolbar Actions -->
+                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6">
+                    <!-- Toggle Chart -->
+                    <Button x:Name="ToggleChartBtn" Click="ToggleChartBtn_Click" ToolTipService.ToolTip="Toggle visualization chart">
+                        <FontIcon Glyph="&#xE9D2;" FontSize="13" />
+                    </Button>
+
+                    <!-- Toggle Details Panel -->
+                    <Button x:Name="ToggleDetailsBtn" Click="ToggleDetailsBtn_Click" ToolTipService.ToolTip="Toggle details side panel">
+                        <FontIcon Glyph="&#xE9F9;" FontSize="13" />
+                    </Button>
+
+                    <Button Command="{x:Bind ViewModel.OpenInExplorerCommand}" ToolTipService.ToolTip="Open in Windows Explorer">
+                        <FontIcon Glyph="&#xEC50;" FontSize="13" />
+                    </Button>
+
+                    <DropDownButton ToolTipService.ToolTip="Export scan report to CSV or JSON" IsEnabled="{x:Bind ViewModel.HasData, Mode=OneWay}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon Glyph="&#xEDE1;" FontSize="13" />
+                            <TextBlock Text="Export" FontSize="12" />
+                        </StackPanel>
+                        <DropDownButton.Flyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Text="Export to CSV (.csv)..." Command="{x:Bind ViewModel.ExportCsvCommand}">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon Glyph="&#xE9F9;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem Text="Export to JSON (.json)..." Command="{x:Bind ViewModel.ExportJsonCommand}">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon Glyph="&#xE943;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                            </MenuFlyout>
+                        </DropDownButton.Flyout>
+                    </DropDownButton>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <StackPanel Grid.Row="1">
+            <!-- Warning InfoBar (if partial scan) -->
+            <InfoBar IsOpen="{x:Bind ViewModel.HasWarnings, Mode=OneWay}"
+                     Severity="Warning"
+                     IsClosable="False"
+                     Message="{x:Bind ViewModel.WarningsSummary, Mode=OneWay}" />
+
+            <!-- Scanning Progress Banner (active during background / rescan) -->
+            <Border Visibility="{x:Bind ViewModel.ShowScanningBanner, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    Background="{ThemeResource LayerFillColorAltBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="0,0,0,1"
+                    Padding="16,6">
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ProgressRing Grid.Column="0" IsActive="True" Width="16" Height="16" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <TextBlock Text="Analyzing storage space..." FontWeight="SemiBold" FontSize="12" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="•" Foreground="{ThemeResource TextFillColorTertiaryBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="{x:Bind ViewModel.ScanningCurrentPath, Mode=OneWay}" FontSize="12" TextTrimming="CharacterEllipsis" MaxWidth="360" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="•" Foreground="{ThemeResource TextFillColorTertiaryBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="{x:Bind ViewModel.ScanningItemsFormatted, Mode=OneWay}" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
+                        <TextBlock Text="items" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="•" Foreground="{ThemeResource TextFillColorTertiaryBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="{x:Bind ViewModel.ScanningBytesFormatted, Mode=OneWay}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <Button Grid.Column="2" Command="{x:Bind ViewModel.CancelScanCommand}" Style="{ThemeResource SubtleButtonStyle}" Padding="8,4" CornerRadius="4">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <FontIcon Glyph="&#xE711;" FontSize="11" />
+                            <TextBlock Text="Cancel" FontSize="11" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Border>
+        </StackPanel>
+
+        <!-- Initial Scan Loading State Card -->
+        <Grid Grid.Row="2" Visibility="{x:Bind ViewModel.ShowScanningOverlay, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+              HorizontalAlignment="Center" VerticalAlignment="Center" Padding="32">
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
+                    CornerRadius="12" Padding="36,28" MinWidth="420" MaxWidth="560">
+                <StackPanel Spacing="16" HorizontalAlignment="Center">
+                    <ProgressRing IsActive="True" Width="44" Height="44" HorizontalAlignment="Center" />
+                    <StackPanel Spacing="4" HorizontalAlignment="Center">
+                        <TextBlock Text="Analyzing Storage Space..." Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" HorizontalAlignment="Center" />
+                        <TextBlock Text="Traversing directories and calculating sizes" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
+                    </StackPanel>
+                    <Border Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="6" Padding="12,8">
+                        <TextBlock Text="{x:Bind ViewModel.ScanningCurrentPath, Mode=OneWay}" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis" MaxWidth="460" HorizontalAlignment="Center" />
+                    </Border>
+                    <Grid ColumnSpacing="24" HorizontalAlignment="Center">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                            <TextBlock Text="{x:Bind ViewModel.ScanningItemsFormatted, Mode=OneWay}" Style="{ThemeResource BodyStrongTextBlockStyle}" HorizontalAlignment="Center" />
+                            <TextBlock Text="Items Scanned" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                            <TextBlock Text="{x:Bind ViewModel.ScanningBytesFormatted, Mode=OneWay}" Style="{ThemeResource BodyStrongTextBlockStyle}" HorizontalAlignment="Center" />
+                            <TextBlock Text="Data Read" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                            <TextBlock Text="{x:Bind ViewModel.ScanningElapsedFormatted, Mode=OneWay}" Style="{ThemeResource BodyStrongTextBlockStyle}" HorizontalAlignment="Center" />
+                            <TextBlock Text="Elapsed" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
+                        </StackPanel>
+                    </Grid>
+                    <ProgressBar IsIndeterminate="True" Height="4" CornerRadius="2" HorizontalAlignment="Stretch" />
+                    <Button Command="{x:Bind ViewModel.CancelScanCommand}" Style="{ThemeResource DefaultButtonStyle}" HorizontalAlignment="Center" Padding="16,6">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon Glyph="&#xE711;" FontSize="11" />
+                            <TextBlock Text="Cancel Analysis" FontSize="12" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Empty State Prompt -->
+        <StackPanel Grid.Row="2" Visibility="{x:Bind ViewModel.ShowEmptyState, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
+            <Border Width="64" Height="64" CornerRadius="16" Background="{ThemeResource LayerFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" HorizontalAlignment="Center">
+                <FontIcon Glyph="&#xEDA2;" FontSize="28" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <StackPanel Spacing="4" HorizontalAlignment="Center">
+                <TextBlock Text="No Storage Volume Selected" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="Bold" HorizontalAlignment="Center" />
+                <TextBlock Text="Select a drive from the sidebar or choose a folder to start analyzing disk space."
+                           Style="{ThemeResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
+            </StackPanel>
+            <Button Command="{x:Bind ViewModel.PickFolderCommand}" Style="{ThemeResource AccentButtonStyle}" HorizontalAlignment="Center" Padding="16,8">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon Glyph="&#xE8F4;" FontSize="13" />
+                    <TextBlock Text="Select Target Folder..." FontWeight="SemiBold" />
+                </StackPanel>
+            </Button>
+        </StackPanel>
+
+        <!-- Main Workspace (Visualizer + Hierarchical Table + Contextual Details) -->
+        <Grid Grid.Row="2" Visibility="{x:Bind ViewModel.ShowWorkspace, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" ColumnSpacing="14" Padding="14,10,14,14">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition x:Name="DetailsColumn" Width="300" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Left: Visualizer & Table -->
+            <Grid Grid.Column="0" RowSpacing="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition x:Name="VisualizerRow" Height="260" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- Interactive Visualizer -->
+                <viz:DiskSpaceVisualizerControl x:Name="SpaceVisualizer"
+                                               Grid.Row="0"
+                                               ItemSelected="SpaceVisualizer_ItemSelected"
+                                               ItemDrilled="SpaceVisualizer_ItemDrilled" />
+
+                <!-- Table Card with horizontal scroll capability when narrow -->
+                <Border Grid.Row="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Column Headers -->
+                        <Border Grid.Row="0" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="0,0,0,1" Padding="12,8">
+                            <Grid ColumnSpacing="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="3.2*" />
+                                    <ColumnDefinition Width="1.2*" />
+                                    <ColumnDefinition Width="1.3*" />
+                                    <ColumnDefinition Width="1.3*" />
+                                    <ColumnDefinition Width="1.0*" />
+                                    <ColumnDefinition Width="1.0*" />
+                                    <ColumnDefinition Width="1.6*" />
+                                </Grid.ColumnDefinitions>
+
+                                <HyperlinkButton Grid.Column="0" Command="{x:Bind ViewModel.SortCommand}" CommandParameter="Name" Padding="0" HorizontalAlignment="Left">
+                                    <TextBlock Text="Name" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" />
+                                </HyperlinkButton>
+
+                                <HyperlinkButton Grid.Column="1" Command="{x:Bind ViewModel.SortCommand}" CommandParameter="Size" Padding="0" HorizontalAlignment="Right">
+                                    <TextBlock Text="Size" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" />
+                                </HyperlinkButton>
+
+                                <HyperlinkButton Grid.Column="2" Command="{x:Bind ViewModel.SortCommand}" CommandParameter="PercentParent" Padding="0" HorizontalAlignment="Center">
+                                    <TextBlock Text="% Folder" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" />
+                                </HyperlinkButton>
+
+                                <HyperlinkButton Grid.Column="3" Command="{x:Bind ViewModel.SortCommand}" CommandParameter="PercentRoot" Padding="0" HorizontalAlignment="Center">
+                                    <TextBlock Text="% Root" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" />
+                                </HyperlinkButton>
+
+                                <HyperlinkButton Grid.Column="4" Command="{x:Bind ViewModel.SortCommand}" CommandParameter="Files" Padding="0" HorizontalAlignment="Right">
+                                    <TextBlock Text="Files" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" />
+                                </HyperlinkButton>
+
+                                <HyperlinkButton Grid.Column="5" Command="{x:Bind ViewModel.SortCommand}" CommandParameter="Folders" Padding="0" HorizontalAlignment="Right">
+                                    <TextBlock Text="Folders" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" />
+                                </HyperlinkButton>
+
+                                <HyperlinkButton Grid.Column="6" Command="{x:Bind ViewModel.SortCommand}" CommandParameter="Modified" Padding="0" HorizontalAlignment="Right">
+                                    <TextBlock Text="Modified" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" />
+                                </HyperlinkButton>
+                            </Grid>
+                        </Border>
+
+                        <!-- Items List -->
+                        <ListView Grid.Row="1" x:Name="ItemsListView"
+                                  ItemsSource="{x:Bind ViewModel.DisplayNodes, Mode=OneWay}"
+                                  SelectedItem="{x:Bind ViewModel.SelectedNode, Mode=TwoWay}"
+                                  DoubleTapped="OnItemDoubleTapped"
+                                  KeyDown="OnListViewKeyDown"
+                                  SelectionMode="Single">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="models:FileSystemNode">
+                                    <!-- Full row is hit-testable with Background="Transparent" -->
+                                    <Grid ColumnSpacing="8" Padding="6,6"
+                                          Background="Transparent"
+                                          HorizontalAlignment="Stretch"
+                                          RightTapped="OnItemRowRightTapped">
+                                        <!-- Rich Context Menu on Right Click -->
+                                        <Grid.ContextFlyout>
+                                            <MenuFlyout>
+                                                <MenuFlyoutItem Text="Open (Enter)" Click="OnContextMenuOpen">
+                                                    <MenuFlyoutItem.Icon>
+                                                        <FontIcon Glyph="&#xE8E5;" />
+                                                    </MenuFlyoutItem.Icon>
+                                                </MenuFlyoutItem>
+                                                <MenuFlyoutItem Text="Open With..." Click="OnContextMenuOpenWith"
+                                                                Visibility="{x:Bind IsDirectory, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Inverse}">
+                                                    <MenuFlyoutItem.Icon>
+                                                        <FontIcon Glyph="&#xE7AC;" />
+                                                    </MenuFlyoutItem.Icon>
+                                                </MenuFlyoutItem>
+                                                <MenuFlyoutItem Text="Explore Folder" Click="OnContextMenuExplore"
+                                                                Visibility="{x:Bind IsDirectory, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                    <MenuFlyoutItem.Icon>
+                                                        <FontIcon Glyph="&#xED25;" />
+                                                    </MenuFlyoutItem.Icon>
+                                                </MenuFlyoutItem>
+                                                <MenuFlyoutSeparator />
+                                                <MenuFlyoutItem Text="Show in Windows Explorer" Click="OnContextMenuExplorer">
+                                                    <MenuFlyoutItem.Icon>
+                                                        <FontIcon Glyph="&#xEC50;" />
+                                                    </MenuFlyoutItem.Icon>
+                                                </MenuFlyoutItem>
+                                                <MenuFlyoutItem Text="Copy Full Path (Ctrl+C)" Click="OnContextMenuCopyPath">
+                                                    <MenuFlyoutItem.Icon>
+                                                        <FontIcon Glyph="&#xE8C8;" />
+                                                    </MenuFlyoutItem.Icon>
+                                                </MenuFlyoutItem>
+                                                <MenuFlyoutItem Text="Scan from here" Click="OnContextMenuScanFromHere"
+                                                                Visibility="{x:Bind IsDirectory, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                    <MenuFlyoutItem.Icon>
+                                                        <FontIcon Glyph="&#xE768;" />
+                                                    </MenuFlyoutItem.Icon>
+                                                </MenuFlyoutItem>
+                                                <MenuFlyoutSeparator />
+                                                <!-- Delete and Permanent Delete -->
+                                                <MenuFlyoutItem Text="Move to Recycle Bin (Delete)" Click="OnContextMenuRecycle">
+                                                    <MenuFlyoutItem.Icon>
+                                                        <FontIcon Glyph="&#xE74D;" />
+                                                    </MenuFlyoutItem.Icon>
+                                                </MenuFlyoutItem>
+                                                <MenuFlyoutItem Text="Permanently Delete (Shift+Delete)" Click="OnContextMenuPermanentDelete">
+                                                    <MenuFlyoutItem.Icon>
+                                                        <FontIcon Glyph="&#xE711;" Foreground="{ThemeResource SystemFillColorCriticalBrush}" />
+                                                    </MenuFlyoutItem.Icon>
+                                                </MenuFlyoutItem>
+                                                <MenuFlyoutSeparator />
+                                                <MenuFlyoutItem Text="Properties (Alt+Enter)" Click="OnContextMenuProperties">
+                                                    <MenuFlyoutItem.Icon>
+                                                        <FontIcon Glyph="&#xE946;" />
+                                                    </MenuFlyoutItem.Icon>
+                                                </MenuFlyoutItem>
+                                            </MenuFlyout>
+                                        </Grid.ContextFlyout>
+
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="3.2*" />
+                                            <ColumnDefinition Width="1.2*" />
+                                            <ColumnDefinition Width="1.3*" />
+                                            <ColumnDefinition Width="1.3*" />
+                                            <ColumnDefinition Width="1.0*" />
+                                            <ColumnDefinition Width="1.0*" />
+                                            <ColumnDefinition Width="1.6*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Name & Icon -->
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                            <FontIcon Glyph="{x:Bind IconGlyph}" FontSize="14" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                                            <TextBlock Text="{x:Bind Name}" Style="{ThemeResource BodyTextBlockStyle}" FontWeight="Medium" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                        </StackPanel>
+
+                                        <!-- Size -->
+                                        <TextBlock Grid.Column="1" Text="{x:Bind FormattedSize}" Style="{ThemeResource CaptionTextBlockStyle}"
+                                                   FontWeight="SemiBold" TextAlignment="Right" VerticalAlignment="Center" />
+
+                                        <!-- % of Folder Progress -->
+                                        <Grid Grid.Column="2" VerticalAlignment="Center" Margin="4,0">
+                                            <ProgressBar Value="{x:Bind PercentOfParent}" Maximum="100" Height="4" CornerRadius="2"
+                                                         Foreground="{x:Bind PercentOfParent, Converter={StaticResource UsageToColorConverter}}" />
+                                            <TextBlock Text="{x:Bind FormattedPercent}" Style="{ThemeResource CaptionTextBlockStyle}"
+                                                       FontSize="10" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Right" Margin="0,-12,0,0" />
+                                        </Grid>
+
+                                        <!-- % of Root Progress -->
+                                        <Grid Grid.Column="3" VerticalAlignment="Center" Margin="4,0">
+                                            <ProgressBar Value="{x:Bind PercentOfRoot}" Maximum="100" Height="4" CornerRadius="2"
+                                                         Foreground="{x:Bind PercentOfRoot, Converter={StaticResource UsageToColorConverter}}" />
+                                            <TextBlock Text="{x:Bind FormattedPercentOfRoot}" Style="{ThemeResource CaptionTextBlockStyle}"
+                                                       FontSize="10" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Right" Margin="0,-12,0,0" />
+                                        </Grid>
+
+                                        <!-- Files Count -->
+                                        <TextBlock Grid.Column="4" Text="{x:Bind TotalFileCount}" Style="{ThemeResource CaptionTextBlockStyle}"
+                                                   TextAlignment="Right" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+                                        <!-- Folders Count -->
+                                        <TextBlock Grid.Column="5" Text="{x:Bind TotalSubfolderCount}" Style="{ThemeResource CaptionTextBlockStyle}"
+                                                   TextAlignment="Right" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+                                        <!-- Modified -->
+                                        <TextBlock Grid.Column="6" Text="{x:Bind FormattedLastModified}" Style="{ThemeResource CaptionTextBlockStyle}"
+                                                   TextAlignment="Right" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+
+                        <!-- Table Footer / Status -->
+                        <Border Grid.Row="2" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="0,1,0,0" Padding="12,6">
+                            <Grid>
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <TextBlock Text="Folder:" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    <TextBlock Text="{x:Bind ViewModel.CurrentDirectoryName, Mode=OneWay}" FontWeight="SemiBold" FontSize="11" />
+                                    <TextBlock Text="•" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                    <TextBlock Text="{x:Bind ViewModel.CurrentDirectoryItemsCount, Mode=OneWay}" FontWeight="SemiBold" FontSize="11" />
+                                    <TextBlock Text="items" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    <TextBlock Text="•" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                    <TextBlock Text="{x:Bind ViewModel.CurrentDirectorySizeFormatted, Mode=OneWay}" FontWeight="SemiBold" FontSize="11" />
+                                </StackPanel>
+
+                                <TextBlock Text="Enter: open/drill • Del: recycle • Shift+Del: permanent • Backspace: up"
+                                           Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                           HorizontalAlignment="Right" FontSize="10" VerticalAlignment="Center" />
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- Right: Contextual Properties Panel -->
+            <Border Grid.Column="1" x:Name="DetailsBorder"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="16,14">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="12">
+                        <!-- Panel Header with Perfectly Aligned Close Button -->
+                        <Grid Height="32">
+                            <TextBlock Text="Properties" Style="{ThemeResource SubtitleTextBlockStyle}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                            <Button HorizontalAlignment="Right" VerticalAlignment="Center"
+                                    Style="{ThemeResource SubtleButtonStyle}"
+                                    Padding="6,6" CornerRadius="4"
+                                    Click="CloseDetails_Click" ToolTipService.ToolTip="Close properties panel">
+                                <FontIcon Glyph="&#xE711;" FontSize="11" />
+                            </Button>
+                        </Grid>
+
+                        <!-- Selection Glyph & Name in Balanced Container -->
+                        <Border Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
+                                CornerRadius="8" Padding="12,10">
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Modern Icon Container -->
+                                <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8"
+                                        Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
+                                        VerticalAlignment="Center">
+                                    <FontIcon Glyph="{x:Bind ViewModel.SelectedNode.IconGlyph, Mode=OneWay}"
+                                              FontSize="18" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                              HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+
+                                <!-- Title and Type aligned to center -->
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                    <TextBlock Text="{x:Bind ViewModel.SelectedNode.Name, Mode=OneWay}"
+                                               FontWeight="SemiBold" FontSize="14"
+                                               TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                    <TextBlock Text="{x:Bind ViewModel.SelectedNode.DisplayType, Mode=OneWay}"
+                                               Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                               FontSize="11" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Property Details Grid -->
+                        <StackPanel Spacing="7">
+                            <Grid>
+                                <TextBlock Text="Full Path" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                <TextBlock Text="{x:Bind ViewModel.SelectedNode.FullPath, Mode=OneWay}" Style="{ThemeResource CaptionTextBlockStyle}"
+                                           FontWeight="Medium" TextTrimming="CharacterEllipsis" MaxWidth="170" HorizontalAlignment="Right"
+                                           ToolTipService.ToolTip="{x:Bind ViewModel.SelectedNode.FullPath, Mode=OneWay}" />
+                            </Grid>
+
+                            <Grid>
+                                <TextBlock Text="Logical Size" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                <TextBlock Text="{x:Bind ViewModel.SelectedNode.FormattedSize, Mode=OneWay}" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="Bold" HorizontalAlignment="Right" />
+                            </Grid>
+
+                            <Grid>
+                                <TextBlock Text="% of Folder" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                <TextBlock Text="{x:Bind ViewModel.SelectedNode.FormattedPercent, Mode=OneWay}" Style="{ThemeResource CaptionTextBlockStyle}" HorizontalAlignment="Right" />
+                            </Grid>
+
+                            <Grid>
+                                <TextBlock Text="% of Root" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                <TextBlock Text="{x:Bind ViewModel.SelectedNode.FormattedPercentOfRoot, Mode=OneWay}" Style="{ThemeResource CaptionTextBlockStyle}" HorizontalAlignment="Right" />
+                            </Grid>
+
+                            <Grid>
+                                <TextBlock Text="Files" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                <TextBlock Text="{x:Bind ViewModel.SelectedNode.TotalFileCount, Mode=OneWay}" Style="{ThemeResource CaptionTextBlockStyle}" HorizontalAlignment="Right" />
+                            </Grid>
+
+                            <Grid>
+                                <TextBlock Text="Folders" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                <TextBlock Text="{x:Bind ViewModel.SelectedNode.TotalSubfolderCount, Mode=OneWay}" Style="{ThemeResource CaptionTextBlockStyle}" HorizontalAlignment="Right" />
+                            </Grid>
+
+                            <Grid>
+                                <TextBlock Text="Modified" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                <TextBlock Text="{x:Bind ViewModel.SelectedNode.FormattedLastModified, Mode=OneWay}" Style="{ThemeResource CaptionTextBlockStyle}" HorizontalAlignment="Right" />
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- Action Buttons -->
+                        <StackPanel Spacing="6" Margin="0,6,0,0">
+                            <!-- Explore (if folder) -->
+                            <Button HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.OpenSelectedCommand}"
+                                    Visibility="{x:Bind ViewModel.SelectedNodeIsDirectory, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <FontIcon Glyph="&#xED25;" FontSize="12" />
+                                    <TextBlock Text="Drill Down (Enter)" FontSize="11" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Open in Explorer -->
+                            <Button HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.OpenInExplorerCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <FontIcon Glyph="&#xEC50;" FontSize="12" />
+                                    <TextBlock Text="Show in Explorer" FontSize="11" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Copy Path -->
+                            <Button HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.CopyPathCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <FontIcon Glyph="&#xE8C8;" FontSize="12" />
+                                    <TextBlock Text="Copy Path (Ctrl+C)" FontSize="11" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Delete Actions -->
+                            <Button HorizontalAlignment="Stretch" Click="OnDeleteButtonClick">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <FontIcon Glyph="&#xE74D;" FontSize="12" />
+                                    <TextBlock Text="Recycle (Delete)" FontSize="11" />
+                                </StackPanel>
+                            </Button>
+
+                            <Button HorizontalAlignment="Stretch" Click="OnPermanentDeleteButtonClick">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <FontIcon Glyph="&#xE711;" FontSize="12" Foreground="{ThemeResource SystemFillColorCriticalBrush}" />
+                                    <TextBlock Text="Delete Permanently" FontSize="11" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Properties Dialog -->
+                            <Button HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.ShowPropertiesCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <FontIcon Glyph="&#xE946;" FontSize="12" />
+                                    <TextBlock Text="Properties (Alt+Enter)" FontSize="11" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>
+
