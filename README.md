@@ -1,62 +1,107 @@
-# DiskScope — Native Windows Disk Space Analyzer
+# Voltrex Light — Modern Windows 11 Storage & Disk-Space Analyzer
 
-**DiskScope** is a high-performance native Windows disk-space analyzer inspired by **TreeSize** and **KDE Filelight**. Built using **C#**, **.NET 8**, **WinUI 3**, **XAML**, and the **Windows App SDK**, it adheres strictly to MVVM architectural principles and Windows 11 Fluent Design standards.
+<p align="center">
+  <img src="Assets/voltrex_light_logo.png" alt="Voltrex Light Logo" width="128" height="128" />
+</p>
+
+<p align="center">
+  <strong>High-performance native Windows 11 disk space analyzer & visualization suite.</strong><br>
+  <em>Developed by <b>mohomed Ziard | Voltrex Digital</b></em>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/.NET-8.0-blue.svg" alt=".NET 8" />
+  <img src="https://img.shields.io/badge/WinUI-3-0078D7.svg" alt="WinUI 3" />
+  <img src="https://img.shields.io/badge/Windows%20App%20SDK-2.5.1-512BD4.svg" alt="Windows App SDK" />
+  <img src="https://img.shields.io/badge/Platform-Windows%2011%20%7C%20x64-00A4EF.svg" alt="Platform x64" />
+  <img src="https://img.shields.io/badge/Tests-57%20Passed-brightgreen.svg" alt="Unit Tests" />
+  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License" />
+</p>
 
 ---
 
-## Key Capabilities Across Phases
+## Overview
 
-### Phase 1: Native WinUI 3 Foundation & Shell
-- Modern Windows 11 desktop experience with **Mica backdrop** and **NavigationView**.
-- Real-time Windows drive monitoring via `DriveInfo` with visual capacity gauges and free-space indicators.
-- Native `FolderPicker` integration with WinRT interop (`InitializeWithWindow`).
-- System-integrated Light, Dark, and High-Contrast theme support with persistent preferences.
+**Voltrex Light** is a native, modern Windows 11 disk analyzer built from the ground up using **C#**, **.NET 8**, **WinUI 3**, **XAML**, and the **Windows App SDK**. Designed as a contemporary alternative to legacy tools like TreeSize, WinDirStat, and KDE Filelight, Voltrex Light delivers high-speed recursive traversal, vector-rendered interactive visualizations (Radial Sunburst and Squarified Treemap), and seamless Windows 11 Fluent Design integration.
 
-### Phase 2: High-Performance Disk Scanning Engine
-- Asynchronous, non-blocking recursive directory scanning on background worker threads.
-- Reparse point and junction cycle detection preventing infinite traversal loops and storage double-counting.
-- Full 64-bit integer arithmetic ensuring exact byte precision for multi-terabyte drives.
-- Cancellation support (`CancellationTokenSource`) and UI-throttled progress updates (~60 ms).
-- Graceful permission handling: inaccessible paths logged as warnings with partial scan badges.
-- Multi-column interactive table sorting by Name, Size, % of Parent, Files, and Date Modified.
+---
 
-### Phase 3: Interactive Visualizations (Sunburst & Treemap)
-- **Filelight Radial Sunburst**:
+## Key Features
+
+### 🌟 Windows 11 Fluent Design & Native Shell
+- **Translucent Mica Backdrop**: Uses native `MicaBackdrop` for Windows 11 desktop integration with support for system Light, Dark, and High Contrast modes.
+- **Custom Modern Titlebar**: Extended client area with integrated branding, draggable region, scale-aware caption button insets, and live status pills.
+- **Administrator Elevation Badge**: Visual badge indicating elevated administrator status, with a one-click **"Run as Admin"** prompt to restart the app with elevated rights for complete disk and system file visibility.
+- **Compact & Adaptive Sidebar**: Optimized 220px `NavigationView` with drive icons, dynamic disk volume items, and responsive adaptation for narrow window sizes.
+
+### ⚡ High-Performance Disk Scanning Engine
+- **Non-Blocking Traversal**: Asynchronous background scanning engine utilizing worker threads with throttled UI updates (~60 ms interval).
+- **Reparse Point & Junction Cycle Avoidance**: Safely identifies NTFS hard links, symbolic links, and volume mount points to prevent infinite loops and storage double-counting.
+- **64-bit Exact Precision**: Arithmetic precision across multi-terabyte drives with support for both Standard decimal (`KB`, `MB`, `GB`, `TB`) and IEC binary (`KiB`, `MiB`, `GiB`, `TiB`) units.
+- **Graceful Permission Recovery**: Access-denied system folders are cataloged safely into partial scan warnings rather than aborting scans.
+
+### 📊 Interactive Visualizations (Sunburst & Treemap)
+- **Filelight-Style Radial Sunburst**:
   - Center disc representing root directory; concentric outer rings representing successive directory depths.
-  - Polar coordinates and angular span proportional to logical size ($2\pi \times \frac{\text{size}}{\text{total}}$).
-  - Strict parent-child angular interval containment.
-  - Double-click drill-down and center-disc navigate-up interactions.
+  - Angular interval containment ensuring strict parent-child spatial hierarchy.
+  - Interactive drill-down (double-click) and navigate-up (center-disc click).
 - **Squarified Treemap**:
-  - Bruls, Huizing, and van Wijk squarified layout algorithm optimizing rectangle aspect ratios.
-  - Proportional space-filling representation with smart label placement.
+  - Bruls, Huizing, and van Wijk layout algorithm optimizing rectangle aspect ratios for legible labels.
+  - Proportional space-filling representation with color palette classification.
 - **Unified Visualizer Host**:
-  - Instant switcher between Radial Sunburst and Squarified Treemap modes.
-  - Interactive breadcrumbs trail with ancestry navigation.
-  - Two-way selection synchronization across visualizer, folder table, and details panel.
-  - Floating hover tooltip displaying path, size, percentage, and type.
+  - Instant switching between Radial Sunburst and Squarified Treemap views.
+  - Adjustable recursion depth levels (1 to 6 layers) and optional on-chart label toggles.
+  - Continuous breadcrumb navigation trail with Up and Home navigation shortcuts.
 
-### Phase 4: Final Features, Quality Assurance & Release
-- **Largest Files Workspace**:
-  - Instant identification of top disk consumers across scanned trees.
-  - **Scope-Aware Context**: Explicitly distinguishes full-drive scans from folder sub-scans ("not entire drive").
-  - **Partial Scan Badging**: Displays clear notice when results reflect accessible files within a partial scan.
-  - **Category Filtering**: Documents, Videos, Audio, Images, Archives, Executables, Code, and Other.
-  - **Size Thresholds**: Filter by `> 1 MB`, `> 10 MB`, `> 50 MB`, `> 100 MB`, `> 500 MB`, `> 1 GB`.
-  - **Multi-Factor Sorting**: Sort by Size (Largest/Smallest), Name (A-Z/Z-A), Modified date, or Extension.
-  - **Safe Shell Integration**:
-    - "Open File" via Windows shell file association (`UseShellExecute = true`).
-    - "Open in Explorer" with `/select,"path"` highlighting.
-    - "Go to Folder" navigating to Folder Analysis with the parent directory selected.
-- **Report Export**:
-  - **RFC 4180 CSV Export**: Complete directory hierarchy with metadata header, 64-bit size precision, and proper escaping for quotes, commas, and newlines.
-  - **Hierarchical JSON Export**: Documented schema (`schemaVersion: "1.0"`) containing scan metadata, warning logs, and full recursive tree nodes.
-  - Native Windows `FileSavePicker` integration.
-- **Scan History & Privacy**:
-  - Versioned local storage in `%LOCALAPPDATA%\DiskScope\history.json` (retaining up to 50 recent scans).
-  - Clear history action.
-  - **100% Offline & Zero-Telemetry**: No paths, metrics, or telemetry are ever transmitted off-device.
-- **Size Unit Convention**:
-  - Instant toggle between Standard decimal-like units (`KB`, `MB`, `GB`, `TB`) and IEC binary notation (`KiB`, `MiB`, `GiB`, `TiB`).
+### 🔍 Unified Storage Analysis Workspace
+- Consolidates drive-level and folder-level analysis into a single, cohesive workflow.
+- Multi-column sortable table (Name, Size, % of Folder, % of Root, Files, Folders, and Modified date).
+- Live search and filter field with `Ctrl+F` hotkey activation.
+- Collapsible contextual properties panel displaying item details, size ratios, badges, and quick actions.
+
+### 🖱️ Windows Shell & File Context Menu
+Right-clicking any file or folder row provides access to native Windows shell operations:
+- **Open (Enter)**: Launch files in default system associations or drill into folders.
+- **Open With...**: Choose alternative applications to open specific files.
+- **Explore Folder**: Open target directories in Windows Explorer.
+- **Show in Windows Explorer**: Highlight the selected item inside Windows Explorer with `/select` arguments.
+- **Copy Full Path (Ctrl+C)**: Copy absolute paths directly to the Windows clipboard.
+- **Scan from here**: Start a targeted sub-scan rooted at the selected directory.
+- **Move to Recycle Bin (Delete)**: Safely recycle files/folders using native Windows shell file APIs.
+- **Permanently Delete (Shift+Delete)**: Permanent deletion with confirmation safeguards.
+- **Properties (Alt+Enter)**: View full properties, size, attributes, and file counts.
+
+### 📡 Real-Time Scanning Indication System
+- **Global Titlebar Pill**: Displays active "Scanning" state with live item counter (`X items`), scanned volume (`Y GB`), and one-click Cancel (✕) button.
+- **Sidebar Badges**: Pulsing `InfoBadge` on the Storage Analysis tab and on the specific storage drive currently undergoing analysis.
+- **Analysis Page Loading Card**: Centered Fluent card during initial volume scans with a 44×44 `ProgressRing`, live directory path traversal display, elapsed timer, and cancel button.
+- **Background Rescan Banner**: Compact banner above tables for non-blocking rescans.
+- **Overview Card State**: "Analyze" button dynamically transforms into an active "Scanning..." indicator with an embedded spinner.
+
+### 🏆 Largest Files Workspace
+- Quickly scan and identify top disk-space consumers across the scanned tree.
+- Filter by category: **Documents**, **Videos**, **Audio**, **Images**, **Archives**, **Executables**, **Code**, and **Other**.
+- Filter by minimum size thresholds (`> 1 MB`, `> 10 MB`, `> 50 MB`, `> 100 MB`, `> 500 MB`, `> 1 GB`).
+- Sort by Size, Name, Date Modified, or Extension.
+
+### 💾 Data Export & Privacy
+- **RFC 4180 CSV Export**: Complete directory tree export with escaped quotes, commas, and exact byte counts.
+- **Hierarchical JSON Export**: Documented schema (`schemaVersion: "1.0"`) with scan metadata, warnings, and recursive nodes.
+- **100% Offline & Private**: Zero telemetry, no external network requests, and complete local processing.
+
+---
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|:---|:---|
+| <kbd>Enter</kbd> | Drill down into folder / Open file |
+| <kbd>Backspace</kbd> or <kbd>Alt</kbd>+<kbd>Up</kbd> | Navigate to parent directory |
+| <kbd>Ctrl</kbd>+<kbd>F</kbd> | Focus search and filter input |
+| <kbd>Ctrl</kbd>+<kbd>C</kbd> | Copy selected item's full path |
+| <kbd>Delete</kbd> | Move selected item to Recycle Bin |
+| <kbd>Shift</kbd>+<kbd>Delete</kbd> | Permanently delete selected item |
+| <kbd>Alt</kbd>+<kbd>Enter</kbd> | Open properties panel / dialog |
 
 ---
 
@@ -64,73 +109,71 @@
 
 ```
 voltrex-light/
-├── Helpers/                  # MVVM primitives & formatters
-│   ├── ObservableObject.cs
-│   ├── RelayCommand.cs
-│   ├── AsyncRelayCommand.cs
-│   └── FileSystemFormatter.cs # Standard (KB) vs Binary (KiB) formatting
-├── Models/                   # Domain entities
-│   ├── ScanStatus.cs
-│   ├── ScanWarning.cs
-│   ├── ScanOptions.cs
-│   ├── ScanResult.cs
-│   ├── ScanProgressInfo.cs
-│   ├── FileSystemNode.cs
-│   ├── DriveItem.cs
-│   ├── AppSettings.cs
-│   └── ScanHistoryItem.cs
-├── Services/                 # Business logic and system services
-│   ├── IScanService.cs / ScanService.cs
-│   ├── IDriveService.cs / DriveService.cs
-│   ├── IFolderPickerService.cs / FolderPickerService.cs
-│   ├── ISettingsService.cs / SettingsService.cs
-│   ├── INavigationService.cs / NavigationService.cs
-│   ├── IExportService.cs / ExportService.cs         # CSV and JSON generation
-│   ├── IScanHistoryService.cs / ScanHistoryService.cs # Versioned history
-│   └── AppServices.cs                              # Zero-dependency IoC provider
-├── Visualizations/           # Interactive Visualization Subsystem
-│   ├── Models/
-│   │   ├── TreemapItem.cs               # Rectangle geometry & hit testing
-│   │   ├── SunburstSlice.cs             # Polar sector geometry & hit testing
-│   │   └── VisualizationBreadcrumbItem.cs # Breadcrumb trail model
+├── Converters/                    # XAML Value Converters (Size, Percentage, Color, Visibility)
+├── Helpers/                       # MVVM foundation, commands, elevation & formatters
+│   ├── AdminElevationHelper.cs    # UAC elevation restart logic
+│   ├── AsyncRelayCommand.cs       # Async ICommand implementation
+│   ├── FileSystemFormatter.cs     # Standard vs IEC binary byte formatters
+│   ├── ObservableObject.cs        # INotifyPropertyChanged base
+│   ├── RelayCommand.cs            # Synchronous RelayCommand
+│   └── WindowsShellHelper.cs      # Native shell, Recycle Bin & Explorer interop
+├── Models/                        # Domain models
+│   ├── AppSettings.cs             # Application configuration
+│   ├── DriveItem.cs               # Storage volume representation & metrics
+│   ├── FileSystemNode.cs          # Hierarchical file tree node with aggregations
+│   ├── ScanHistoryItem.cs         # Persisted scan record
+│   ├── ScanOptions.cs             # Scan configuration parameters
+│   ├── ScanProgressInfo.cs        # Throttled live scanning metrics
+│   ├── ScanResult.cs              # Immutable scan result bundle
+│   ├── ScanStatus.cs              # State enumeration (Idle, Scanning, Completed, etc.)
+│   └── ScanWarning.cs             # Inaccessible path & reparse point logging
+├── Services/                      # Application & System Services
+│   ├── AppServices.cs             # Dependency injection & service locator
+│   ├── DriveService.cs            # System drive enumeration & capacity monitoring
+│   ├── ExportService.cs           # RFC 4180 CSV and JSON schema export
+│   ├── FolderPickerService.cs     # Native WinRT FolderPicker integration
+│   ├── NavigationService.cs       # Page routing & parameter passing
+│   ├── ScanHistoryService.cs      # Persistent scan history management
+│   ├── ScanService.cs             # Recursive, asynchronous file scanning engine
+│   └── SettingsService.cs         # Settings serialization & theme management
+├── ViewModels/                    # MVVM ViewModels
+│   ├── MainViewModel.cs           # Root window, titlebar & sidebar logic
+│   ├── OverviewViewModel.cs       # System drives dashboard
+│   ├── StorageAnalysisViewModel.cs# Unified storage workspace, breadcrumbs & shell actions
+│   ├── LargestFilesViewModel.cs   # Top consumers filter & sort engine
+│   └── SettingsViewModel.cs       # Application settings & history management
+├── Views/                         # WinUI 3 XAML Pages & Windows
+│   ├── MainWindow.xaml (.cs)      # Root application shell with NavigationView & titlebar
+│   ├── OverviewPage.xaml (.cs)    # Drive cards, aggregate capacity & quick actions
+│   ├── StorageAnalysisPage.xaml (.cs) # Hierarchical table, visualizer host & details panel
+│   ├── LargestFilesPage.xaml (.cs)# Top files table, category chips & filters
+│   └── SettingsPage.xaml (.cs)    # Theme selection, unit preferences & history
+├── Visualizations/                # Interactive Visualization Engine
+│   ├── Controls/
+│   │   ├── DiskSpaceVisualizerControl.xaml (.cs) # Unified visualizer host & breadcrumbs
+│   │   ├── SunburstControl.xaml (.cs)            # Filelight radial canvas renderer
+│   │   └── TreemapControl.xaml (.cs)             # Squarified canvas treemap renderer
 │   ├── Engines/
-│   │   ├── ITreemapLayoutEngine.cs
-│   │   ├── SquarifiedTreemapEngine.cs   # Bruls squarified treemap algorithm
-│   │   ├── ISunburstLayoutEngine.cs
-│   │   ├── SunburstLayoutEngine.cs      # Filelight radial annular engine
-│   │   └── PaletteProvider.cs           # Accessible, theme-aware palette generator
-│   └── Controls/
-│       ├── TreemapControl.xaml (.cs)     # Canvas-based vector treemap renderer
-│       ├── SunburstControl.xaml (.cs)    # Canvas-based vector sunburst renderer
-│       └── DiskSpaceVisualizerControl.xaml (.cs) # Toolbar, breadcrumbs & host
-├── ViewModels/
-│   ├── MainViewModel.cs
-│   ├── OverviewViewModel.cs
-│   ├── DriveAnalysisViewModel.cs        # Drive scanning, visualization & export
-│   ├── FolderAnalysisViewModel.cs       # Folder scanning, visualization & export
-│   ├── LargestFilesViewModel.cs         # Filtering, sorting, shell actions
-│   └── SettingsViewModel.cs             # Theme, units, visualization default, history
-├── Views/
-│   ├── MainWindow.xaml (.cs)            # Root shell with NavigationView
-│   ├── OverviewPage.xaml (.cs)          # Drive grid and dashboard
-│   ├── DriveAnalysisPage.xaml (.cs)     # Tree, visualizer, export toolbar
-│   ├── FolderAnalysisPage.xaml (.cs)    # Tree, visualizer, export toolbar
-│   ├── LargestFilesPage.xaml (.cs)      # Top space consumers workspace
-│   └── SettingsPage.xaml (.cs)          # Settings & history management
-├── Converters/                          # XAML Value Converters
-└── tests/voltrex-light.Tests/           # Comprehensive Unit Tests (54 passing tests)
-    ├── FileSystemFormatterTests.cs
+│   │   ├── PaletteProvider.cs                    # Accessible Fluent color palettes
+│   │   ├── SquarifiedTreemapEngine.cs            # Squarified geometric layout
+│   │   └── SunburstLayoutEngine.cs               # Polar coordinate layout engine
+│   └── Models/
+│       ├── SunburstSlice.cs                      # Polar wedge data & hit test bounds
+│       ├── TreemapItem.cs                        # Rectangle coordinates & hit test bounds
+│       └── VisualizationBreadcrumbItem.cs        # Breadcrumb trail entry
+└── tests/voltrex-light.Tests/     # Comprehensive MSTest Suite (57 automated tests)
     ├── DriveItemTests.cs
-    ├── RelayCommandTests.cs
-    ├── SettingsServiceTests.cs
     ├── DriveServiceTests.cs
-    ├── ScanServiceTests.cs
-    ├── ScanSortingTests.cs
-    ├── VisualizationEngineTests.cs
+    ├── ExportServiceTests.cs      # CSV RFC 4180 escaping & JSON schema tests
+    ├── FileSystemFormatterTests.cs# Byte & percentage formatting tests
+    ├── LargestFilesViewModelTests.cs
     ├── OverviewViewModelTests.cs
-    ├── ExportServiceTests.cs            # RFC 4180 CSV escaping & JSON schema validation
-    ├── ScanHistoryServiceTests.cs       # History persistence, FIFO capping & clear
-    └── LargestFilesViewModelTests.cs    # Scope, categories, thresholds, and navigation
+    ├── RelayCommandTests.cs
+    ├── ScanHistoryServiceTests.cs
+    ├── ScanServiceTests.cs        # Traversal, cancellation & permission tests
+    ├── ScanSortingTests.cs
+    ├── SettingsServiceTests.cs
+    └── VisualizationEngineTests.cs# Sunburst angles, Treemap aspect ratios & hit-testing
 ```
 
 ---
@@ -138,45 +181,53 @@ voltrex-light/
 ## Building and Running
 
 ### Prerequisites
-- **IDE**: Visual Studio 2026 (or Visual Studio 2022 v17.10+ with .NET desktop and Windows App SDK workloads).
-- **Target Framework**: .NET 8 (`net8.0-windows10.0.19041.0`).
-- **Platform**: `x64` (or `ARM64`).
-- **OS Minimum Requirement**: Windows 10, version 1809 (Build 17763) or Windows 11 (Recommended: Windows 11 22H2+).
+- **Operating System**: Windows 10 version 1809 (Build 17763) or Windows 11 (Windows 11 22H2+ recommended).
+- **SDK**: [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
+- **Workloads**: Visual Studio 2022 v17.10+ / Visual Studio 2026 with:
+  - *.NET Desktop Development*
+  - *Windows App SDK C# Templates*
 
-### Release Build
+### Build Debug (x64)
 ```powershell
-# Build application in Release x64 configuration
-dotnet build "voltrex-light.csproj" -c Release -p:Platform=x64 --no-restore
+dotnet build voltrex-light.csproj -p:Platform=x64
+```
 
-# Output binary located at:
-# bin\x64\Release\net8.0-windows10.0.19041.0\win-x64\voltrex-light.exe
+### Build Release (x64)
+```powershell
+dotnet build voltrex-light.csproj -c Release -p:Platform=x64
+```
+The standalone, unpackaged desktop executable will be located at:
+```
+bin\x64\Release\net8.0-windows10.0.19041.0\win-x64\voltrex-light.exe
 ```
 
 ### Running Unit Tests
 ```powershell
-# Execute the full unit test suite (54 automated tests)
-dotnet test "tests/voltrex-light.Tests/voltrex-light.Tests.csproj" --no-restore
+dotnet test tests/voltrex-light.Tests/voltrex-light.Tests.csproj
 ```
 
 ---
 
-## Quality Assurance & Verification Results
+## Quality Assurance & Test Coverage
 
-All 54 unit tests pass without failures:
-- **Export Verification**:
-  - RFC 4180 CSV formatting handles double quotes (`""`), commas, and embedded newlines correctly.
-  - 64-bit integer values retain complete byte precision without scientific notation truncation.
-  - JSON output passes `JsonDocument.Parse` validation with explicit `schemaVersion: "1.0"`.
-- **Scan History**:
-  - Validates persistent serialization to `%LOCALAPPDATA%\DiskScope\history.json`.
-  - Enforces FIFO capping to 50 items.
-  - Validates complete history purge upon user request.
-- **Visualizer Layout Engines**:
-  - Treemap squarification aspect ratio preservation and area proportionality.
-  - Sunburst radial wedge angle accuracy and child angular interval containment.
-  - Polar and Cartesian hit-testing accuracy.
-- **Largest Files**:
-  - Scope string detection (`Drive` vs `Folder (not entire drive)`).
-  - Category extension matching (Documents, Videos, Audio, Images, Archives, Executables, Code).
-  - Minimum size thresholding and multi-column sorting.
+The automated test suite covers 57 unit tests across core subsystems:
+- **Visualizer Layout Engines**: Treemap squarification aspect ratios, space-filling conservation, and Sunburst radial wedge angle interval containment.
+- **Formatting & Units**: Exact 64-bit byte representations across standard and IEC binary unit conventions.
+- **Export Verification**: RFC 4180 CSV quote and comma escaping, 64-bit precision, and JSON schema parsing.
+- **Safety & History**: FIFO history pruning (capped at 50 records) and persistent storage in `%LOCALAPPDATA%\VoltrexLight\history.json`.
+- **Filtering & Scope**: Category detection, file extension classification, and size threshold boundaries.
+
+---
+
+## Authors & Attribution
+
+- **Developer**: mohomed Ziard
+- **Organization**: [Voltrex Digital](https://voltrexdigital.com)
+- **Project**: Voltrex Light (Storage & Disk-Space Analyzer)
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
 
