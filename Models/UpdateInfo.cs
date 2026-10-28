@@ -22,8 +22,8 @@ public enum UpdateStatus
 /// </summary>
 public class UpdateInfo
 {
-    public string CurrentVersion { get; set; } = "1.0.0";
-    public string LatestVersion { get; set; } = "1.0.0";
+    public string CurrentVersion { get; set; } = "1.0.1";
+    public string LatestVersion { get; set; } = "1.0.1";
     public string ReleaseDate { get; set; } = string.Empty;
     public string ReleaseNotes { get; set; } = string.Empty;
     public string DownloadUrl { get; set; } = string.Empty;

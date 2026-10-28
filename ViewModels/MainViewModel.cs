@@ -151,7 +151,7 @@ public class MainViewModel : ObservableObject
 
         drive.IsScanning = true;
         SelectedPath = drive.RootDirectory;
-        _navigationService.NavigateTo("StorageAnalysis", drive.RootDirectory);
+        _navigationService.NavigateTo("StorageAnalysis");
         try
         {
             await _scanService.ScanPathAsync(drive.RootDirectory);
@@ -190,6 +190,13 @@ public class MainViewModel : ObservableObject
             _ = LoadSidebarDrivesAsync();
             AppServices.OverviewViewModel.LoadDrivesCommand.Execute(null);
         }
+        else if (_navigationService.CurrentPageKey == "StorageAnalysis")
+        {
+            if (AppServices.StorageAnalysisViewModel.RefreshCommand.CanExecute(null))
+            {
+                AppServices.StorageAnalysisViewModel.RefreshCommand.Execute(null);
+            }
+        }
         else if (!string.IsNullOrEmpty(SelectedPath))
         {
             _ = _scanService.ScanPathAsync(SelectedPath);
@@ -202,7 +209,7 @@ public class MainViewModel : ObservableObject
         if (!string.IsNullOrEmpty(folder))
         {
             SelectedPath = folder;
-            _navigationService.NavigateTo("StorageAnalysis", folder);
+            _navigationService.NavigateTo("StorageAnalysis");
             await _scanService.ScanPathAsync(folder);
         }
     }
@@ -214,7 +221,7 @@ public class MainViewModel : ObservableObject
         {
             var targetDrive = drives[0].RootDirectory;
             SelectedPath = targetDrive;
-            _navigationService.NavigateTo("StorageAnalysis", targetDrive);
+            _navigationService.NavigateTo("StorageAnalysis");
             await _scanService.ScanPathAsync(targetDrive);
         }
     }

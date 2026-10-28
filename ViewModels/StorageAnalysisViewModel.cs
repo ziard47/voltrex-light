@@ -56,6 +56,8 @@ public class StorageAnalysisViewModel : ObservableObject
                 OnPropertyChanged(nameof(ShowEmptyState));
                 ExportCsvCommand.RaiseCanExecuteChanged();
                 ExportJsonCommand.RaiseCanExecuteChanged();
+                OnPropertyChanged(nameof(CanRefresh));
+                RefreshCommand?.NotifyCanExecuteChanged();
             }
         }
     }
@@ -206,6 +208,7 @@ public class StorageAnalysisViewModel : ObservableObject
     public RelayCommand ExportCsvCommand { get; }
     public RelayCommand ExportJsonCommand { get; }
     public RelayCommand CancelScanCommand { get; }
+    public AsyncRelayCommand RefreshCommand { get; }
 
     public StorageAnalysisViewModel(
         IScanService scanService,
@@ -233,6 +236,7 @@ public class StorageAnalysisViewModel : ObservableObject
         ExportCsvCommand = new RelayCommand(async () => await ExecuteExportAsync("csv"), () => HasData);
         ExportJsonCommand = new RelayCommand(async () => await ExecuteExportAsync("json"), () => HasData);
         CancelScanCommand = new RelayCommand(() => _scanService.CancelScan(), () => _scanService.IsScanning);
+        RefreshCommand = new AsyncRelayCommand(ExecuteRefreshAsync, () => !_scanService.IsScanning && CanRefresh);
 
         _scanService.Progress.PropertyChanged += (s, e) =>
         {
@@ -244,6 +248,7 @@ public class StorageAnalysisViewModel : ObservableObject
                 OnPropertyChanged(nameof(ShowWorkspace));
                 OnPropertyChanged(nameof(ShowEmptyState));
                 CancelScanCommand.NotifyCanExecuteChanged();
+                RefreshCommand.NotifyCanExecuteChanged();
             }
             else if (e.PropertyName == nameof(ScanProgressInfo.CurrentPath))
             {
@@ -271,6 +276,8 @@ public class StorageAnalysisViewModel : ObservableObject
         }
     }
 
+    public bool CanRefresh => !string.IsNullOrEmpty(CurrentFolderPath) || RootNode != null || _scanService.LastResult != null;
+
     private void OnScanCompleted(object? sender, ScanResult result)
     {
         OnPropertyChanged(nameof(IsScanning));
@@ -278,27 +285,55 @@ public class StorageAnalysisViewModel : ObservableObject
         OnPropertyChanged(nameof(ShowScanningBanner));
         OnPropertyChanged(nameof(ShowWorkspace));
         OnPropertyChanged(nameof(ShowEmptyState));
+        CancelScanCommand.NotifyCanExecuteChanged();
+        RefreshCommand.NotifyCanExecuteChanged();
 
-        if (result != null)
+        if (result == null || result.Status == ScanStatus.Cancelled)
         {
-            ElapsedTime = result.ElapsedTime;
-            SkippedItemsCount = result.SkippedCount;
-            IsPartialScan = result.IsPartial;
+            return;
+        }
 
-            if (result.Warnings.Count > 0)
-            {
-                HasWarnings = true;
-                var unauthCount = result.Warnings.Count(w => w.WarningType == ScanWarningType.UnauthorizedAccess);
-                var reparseCount = result.Warnings.Count(w => w.WarningType == ScanWarningType.ReparsePointSkipped);
-                WarningsSummary = $"Partial scan: {result.SkippedCount} items skipped ({unauthCount} access-denied system directories, {reparseCount} junction links).";
-            }
-            else
-            {
-                HasWarnings = false;
-                WarningsSummary = string.Empty;
-            }
+        ElapsedTime = result.ElapsedTime;
+        SkippedItemsCount = result.SkippedCount;
+        IsPartialScan = result.IsPartial;
 
-            RootNode = result.RootNode;
+        if (result.Warnings.Count > 0)
+        {
+            HasWarnings = true;
+            var unauthCount = result.Warnings.Count(w => w.WarningType == ScanWarningType.UnauthorizedAccess);
+            var reparseCount = result.Warnings.Count(w => w.WarningType == ScanWarningType.ReparsePointSkipped);
+            WarningsSummary = $"Partial scan: {result.SkippedCount} items skipped ({unauthCount} access-denied system directories, {reparseCount} junction links).";
+        }
+        else
+        {
+            HasWarnings = false;
+            WarningsSummary = string.Empty;
+        }
+
+        RootNode = result.RootNode;
+    }
+
+    private async Task ExecuteRefreshAsync()
+    {
+        if (_scanService.IsScanning) return;
+
+        string? targetPath = RootNode?.FullPath;
+        if (string.IsNullOrWhiteSpace(targetPath))
+        {
+            targetPath = CurrentFolderPath;
+        }
+        if (string.IsNullOrWhiteSpace(targetPath))
+        {
+            targetPath = _scanService.LastResult?.RootPath;
+        }
+        if (string.IsNullOrWhiteSpace(targetPath))
+        {
+            targetPath = _scanService.Progress.CurrentPath;
+        }
+
+        if (!string.IsNullOrWhiteSpace(targetPath))
+        {
+            await _scanService.ScanPathAsync(targetPath);
         }
     }
 
@@ -504,6 +539,12 @@ public class StorageAnalysisViewModel : ObservableObject
     public void SetPath(string path)
     {
         if (string.IsNullOrEmpty(path)) return;
+
+        // If a scan is already actively running, do not start a competing scan
+        if (_scanService.IsScanning)
+        {
+            return;
+        }
 
         if (RootNode != null)
         {

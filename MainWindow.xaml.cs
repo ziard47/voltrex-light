@@ -6,6 +6,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.UI;
+using voltrex_light.Helpers;
 using voltrex_light.Models;
 using voltrex_light.Services;
 using voltrex_light.ViewModels;
@@ -22,6 +23,7 @@ public sealed partial class MainWindow : Window
 
     public MainWindow()
     {
+        DispatcherHelper.Initialize(DispatcherQueue);
         InitializeComponent();
 
         // Modern Windows 11 Titlebar Integration: extend into toolbar & set interactive drag region

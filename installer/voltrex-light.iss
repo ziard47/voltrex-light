@@ -3,7 +3,7 @@
 ; Developed by mohomed Ziard | Voltrex Digital
 
 #define MyAppName "Voltrex Light"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.0.1"
 #define MyAppPublisher "mohomed Ziard | Voltrex Digital"
 #define MyAppURL "https://github.com/ziard47/voltrex-light"
 #define MyAppExeName "voltrex-light.exe"

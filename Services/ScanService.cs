@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using voltrex_light.Helpers;
 using voltrex_light.Models;
 
 namespace voltrex_light.Services;
@@ -146,12 +147,6 @@ public class ScanService : IScanService
             stopwatch.Stop();
         }
 
-        // Ensure progress reflects final snapshot
-        ReportProgressThrottled(rootPath, force: true);
-        Progress.Status = finalStatus;
-        Progress.ElapsedTime = stopwatch.Elapsed;
-        Progress.CurrentPath = string.Empty;
-
         var sortedLargest = largestFiles
             .OrderByDescending(f => f.SizeBytes)
             .Take(options.MaxLargestFilesCount)
@@ -173,16 +168,26 @@ public class ScanService : IScanService
             ErrorMessage = errorMessage
         };
 
-        // Guard against race conditions: only update LastResult if this is still the active scan
+        // Guard against race conditions: only update Progress and LastResult if this is still the active scan
         lock (_lock)
         {
-            if (_activeScanId == scanId)
+            if (_activeScanId != scanId)
             {
-                LastResult = scanResult;
+                return scanResult;
             }
+            LastResult = scanResult;
         }
 
-        ScanCompleted?.Invoke(this, scanResult);
+        // Ensure progress reflects final snapshot
+        ReportProgressThrottled(rootPath, force: true);
+        Progress.Status = finalStatus;
+        Progress.ElapsedTime = stopwatch.Elapsed;
+        Progress.CurrentPath = string.Empty;
+
+        DispatcherHelper.ExecuteOnUIThread(() =>
+        {
+            ScanCompleted?.Invoke(this, scanResult);
+        });
         return scanResult;
     }
 

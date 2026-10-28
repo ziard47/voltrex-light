@@ -13,6 +13,10 @@
     Background="Transparent"
     SizeChanged="OnPageSizeChanged">
 
+    <Page.KeyboardAccelerators>
+        <KeyboardAccelerator Key="F5" Invoked="RefreshAccelerator_Invoked" />
+    </Page.KeyboardAccelerators>
+
     <Grid x:Name="RootLayoutGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -82,6 +86,14 @@
 
                 <!-- Toolbar Actions -->
                 <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6">
+                    <!-- Refresh / Rescan -->
+                    <Button Command="{x:Bind ViewModel.RefreshCommand}" ToolTipService.ToolTip="Refresh and rescan current directory (F5)">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon Glyph="&#xE72C;" FontSize="13" />
+                            <TextBlock Text="Refresh" FontSize="12" />
+                        </StackPanel>
+                    </Button>
+
                     <!-- Toggle Chart -->
                     <Button x:Name="ToggleChartBtn" Click="ToggleChartBtn_Click" ToolTipService.ToolTip="Toggle visualization chart">
                         <FontIcon Glyph="&#xE9D2;" FontSize="13" />

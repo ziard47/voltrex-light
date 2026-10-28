@@ -11,14 +11,25 @@ public class StorageAnalysisViewModelTests
 {
     private class MockScanService : IScanService
     {
-        public bool IsScanning => false;
+        public bool IsScanning => Progress.IsScanning;
         public ScanProgressInfo Progress { get; } = new();
         public ScanResult? LastResult { get; set; }
+        public string? LastScannedPath { get; private set; }
 
         public event EventHandler<ScanResult>? ScanCompleted;
 
-        public Task<ScanResult> ScanAsync(ScanOptions options, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-        public Task<FileSystemNode?> ScanPathAsync(string rootPath, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task<ScanResult> ScanAsync(ScanOptions options, CancellationToken cancellationToken = default)
+        {
+            LastScannedPath = options.RootPath;
+            return Task.FromResult(LastResult ?? new ScanResult());
+        }
+
+        public Task<FileSystemNode?> ScanPathAsync(string rootPath, CancellationToken cancellationToken = default)
+        {
+            LastScannedPath = rootPath;
+            return Task.FromResult(LastResult?.RootNode);
+        }
+
         public void CancelScan() { }
 
         public void FireScanCompleted(ScanResult result)
@@ -173,6 +184,92 @@ public class StorageAnalysisViewModelTests
         Assert.AreEqual(600, root.SizeBytes);
         Assert.AreEqual(1, root.TotalFileCount);
         Assert.AreEqual(100.0, fileB.PercentOfParent, 0.01);
+    }
+
+    [TestMethod]
+    public async Task StorageAnalysisViewModel_RefreshCommand_RescansCurrentTarget()
+    {
+        var mockScan = new MockScanService();
+        var mockPicker = new MockFolderPicker();
+
+        var root = new FileSystemNode { Name = "C:\\", FullPath = "C:\\", IsDirectory = true, SizeBytes = 500 };
+        root.Children.Add(new FileSystemNode { Name = "test.txt", FullPath = "C:\\test.txt", IsDirectory = false, SizeBytes = 500, Parent = root });
+
+        mockScan.LastResult = new ScanResult { RootPath = "C:\\", RootNode = root };
+        var vm = new StorageAnalysisViewModel(mockScan, mockPicker);
+
+        Assert.IsTrue(vm.CanRefresh);
+        Assert.IsTrue(vm.RefreshCommand.CanExecute(null));
+
+        await vm.RefreshCommand.ExecuteAsync();
+
+        Assert.AreEqual("C:\\", mockScan.LastScannedPath);
+    }
+
+    [TestMethod]
+    public void StorageAnalysisViewModel_ScanningFlags_UpdateAccurately()
+    {
+        var mockScan = new MockScanService();
+        var mockPicker = new MockFolderPicker();
+        var vm = new StorageAnalysisViewModel(mockScan, mockPicker);
+
+        // Initially no data and idle
+        Assert.IsFalse(vm.IsScanning);
+        Assert.IsFalse(vm.ShowScanningOverlay);
+        Assert.IsFalse(vm.ShowScanningBanner);
+        Assert.IsFalse(vm.ShowWorkspace);
+        Assert.IsTrue(vm.ShowEmptyState);
+
+        // Start scanning initial target
+        mockScan.Progress.Status = ScanStatus.Scanning;
+        Assert.IsTrue(vm.IsScanning);
+        Assert.IsTrue(vm.ShowScanningOverlay);
+        Assert.IsFalse(vm.ShowScanningBanner);
+        Assert.IsFalse(vm.ShowWorkspace);
+        Assert.IsFalse(vm.ShowEmptyState);
+
+        // Scan completes
+        var root = new FileSystemNode { Name = "D:\\", FullPath = "D:\\", IsDirectory = true, SizeBytes = 1000 };
+        root.Children.Add(new FileSystemNode { Name = "item.txt", FullPath = "D:\\item.txt", IsDirectory = false, SizeBytes = 1000, Parent = root });
+        mockScan.Progress.Status = ScanStatus.Completed;
+        mockScan.FireScanCompleted(new ScanResult { RootPath = "D:\\", RootNode = root, Status = ScanStatus.Completed });
+
+        Assert.IsFalse(vm.IsScanning);
+        Assert.IsFalse(vm.ShowScanningOverlay);
+        Assert.IsFalse(vm.ShowScanningBanner);
+        Assert.IsTrue(vm.ShowWorkspace);
+        Assert.IsFalse(vm.ShowEmptyState);
+
+        // Trigger rescan with existing data loaded
+        mockScan.Progress.Status = ScanStatus.Scanning;
+        Assert.IsTrue(vm.IsScanning);
+        Assert.IsFalse(vm.ShowScanningOverlay);
+        Assert.IsTrue(vm.ShowScanningBanner); // Top banner active
+        Assert.IsTrue(vm.ShowWorkspace);      // Workspace remains visible
+        Assert.IsFalse(vm.ShowEmptyState);
+    }
+
+    [TestMethod]
+    public void StorageAnalysisViewModel_CancelledScan_PreservesExistingData()
+    {
+        var mockScan = new MockScanService();
+        var mockPicker = new MockFolderPicker();
+
+        var root = new FileSystemNode { Name = "C:\\", FullPath = "C:\\", IsDirectory = true, SizeBytes = 1000 };
+        root.Children.Add(new FileSystemNode { Name = "item.txt", FullPath = "C:\\item.txt", IsDirectory = false, SizeBytes = 1000, Parent = root });
+        mockScan.LastResult = new ScanResult { RootPath = "C:\\", RootNode = root, Status = ScanStatus.Completed };
+
+        var vm = new StorageAnalysisViewModel(mockScan, mockPicker);
+        Assert.AreEqual(root, vm.RootNode);
+        Assert.IsTrue(vm.HasData);
+
+        // Simulate cancellation of an active or duplicate scan
+        mockScan.Progress.Status = ScanStatus.Cancelled;
+        mockScan.FireScanCompleted(new ScanResult { RootPath = "C:\\", RootNode = null, Status = ScanStatus.Cancelled });
+
+        // RootNode and data must be preserved, not wiped out
+        Assert.AreEqual(root, vm.RootNode);
+        Assert.IsTrue(vm.HasData);
     }
 }
 

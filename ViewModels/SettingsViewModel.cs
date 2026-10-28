@@ -82,7 +82,7 @@ public class SettingsViewModel : ObservableObject
 
     // Clean, technology-agnostic About Section properties
     public string AppName => "Voltrex Light";
-    public string AppVersion => "1.0.0";
+    public string AppVersion => "1.0.1";
     public string AppDescription => "Modern, high-performance disk space analyzer and storage visualization tool for Windows.";
     public string DeveloperName => "mohomed Ziard | Voltrex Digital";
 
