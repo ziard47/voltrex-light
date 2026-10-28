@@ -81,6 +81,15 @@ public sealed partial class StorageAnalysisPage : Page
         }
     }
 
+    private void RefreshAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        if (ViewModel.RefreshCommand.CanExecute(null))
+        {
+            args.Handled = true;
+            ViewModel.RefreshCommand.Execute(null);
+        }
+    }
+
     private void OnPageSizeChanged(object sender, SizeChangedEventArgs e)
     {
         ApplyAdaptiveLayout(e.NewSize.Width);

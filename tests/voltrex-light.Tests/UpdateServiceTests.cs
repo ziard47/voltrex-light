@@ -191,7 +191,7 @@ public class UpdateServiceTests
         var vm = new SettingsViewModel(settingsService, scanHistoryService);
 
         Assert.AreEqual("Voltrex Light", vm.AppName);
-        Assert.AreEqual("1.0.0", vm.AppVersion);
+        Assert.AreEqual("1.0.1", vm.AppVersion);
         Assert.AreEqual("mohomed Ziard | Voltrex Digital", vm.DeveloperName);
         Assert.IsFalse(string.IsNullOrWhiteSpace(vm.AppDescription));
     }

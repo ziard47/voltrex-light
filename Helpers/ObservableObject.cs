@@ -13,7 +13,13 @@ public abstract class ObservableObject : INotifyPropertyChanged
 
     protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        var handler = PropertyChanged;
+        if (handler == null) return;
+
+        DispatcherHelper.ExecuteOnUIThread(() =>
+        {
+            handler.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        });
     }
 
     protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string? propertyName = null)

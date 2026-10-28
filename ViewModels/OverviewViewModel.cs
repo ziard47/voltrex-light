@@ -139,6 +139,34 @@ public class OverviewViewModel : ObservableObject
             () => SelectedDrive != null);
         ScanFolderQuickCommand = new AsyncRelayCommand(ExecuteScanFolderQuickAsync);
         OpenInExplorerCommand = new RelayCommand<DriveItem>(ExecuteOpenInExplorer);
+
+        _scanService.Progress.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(ScanProgressInfo.IsScanning) ||
+                e.PropertyName == nameof(ScanProgressInfo.CurrentPath))
+            {
+                UpdateDrivesScanningStatus();
+            }
+        };
+    }
+
+    private void UpdateDrivesScanningStatus()
+    {
+        bool isScanning = _scanService.IsScanning;
+        string currentRoot = _scanService.Progress.CurrentPath;
+
+        foreach (var drive in Drives)
+        {
+            if (!isScanning || string.IsNullOrEmpty(currentRoot))
+            {
+                drive.IsScanning = false;
+            }
+            else
+            {
+                drive.IsScanning = currentRoot.StartsWith(drive.RootDirectory, StringComparison.OrdinalIgnoreCase) ||
+                                   drive.RootDirectory.StartsWith(currentRoot, StringComparison.OrdinalIgnoreCase);
+            }
+        }
     }
 
     public async Task LoadDrivesAsync()
@@ -194,7 +222,7 @@ public class OverviewViewModel : ObservableObject
 
         drive.LastScanTime = DateTime.Now;
         drive.IsScanning = true;
-        _navigationService.NavigateTo("StorageAnalysis", drive.RootDirectory);
+        _navigationService.NavigateTo("StorageAnalysis");
         try
         {
             await _scanService.ScanPathAsync(drive.RootDirectory);
@@ -210,7 +238,7 @@ public class OverviewViewModel : ObservableObject
         var folder = await _folderPickerService.PickFolderAsync();
         if (!string.IsNullOrEmpty(folder))
         {
-            _navigationService.NavigateTo("StorageAnalysis", folder);
+            _navigationService.NavigateTo("StorageAnalysis");
             await _scanService.ScanPathAsync(folder);
         }
     }
