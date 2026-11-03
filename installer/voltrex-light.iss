@@ -1,9 +1,9 @@
-; Voltrex Light — Inno Setup Script
+﻿; Voltrex Light — Inno Setup Script
 ; High-performance native Windows 11 disk space analyzer & visualization suite.
 ; Developed by mohomed Ziard | Voltrex Digital
 
 #define MyAppName "Voltrex Light"
-#define MyAppVersion "1.0.1"
+#define MyAppVersion "1.0.2"
 #define MyAppPublisher "mohomed Ziard | Voltrex Digital"
 #define MyAppURL "https://github.com/ziard47/voltrex-light"
 #define MyAppExeName "voltrex-light.exe"

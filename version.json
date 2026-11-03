@@ -1,8 +1,8 @@
 {
-  "version": "1.0.1",
-  "releaseDate": "October 2026",
-  "releaseNotes": "✨ Highlights in Voltrex Light 1.0.1:\n• Added dedicated Refresh button and F5 hotkey support in Storage Analysis toolbar.\n• Fixed real-time scanning indications across titlebar, sidebar, and workspace.\n• Resolved concurrent scan race conditions and background UI thread dispatching.\n• Enhanced stability during rapid drive and folder re-analysis.\n• Continued 100% private, local file processing with zero telemetry.",
-  "downloadUrl": "https://github.com/ziard47/voltrex-light/releases/download/v1.0.1/voltrex-light-setup-1.0.1.exe",
+  "version": "1.0.2",
+  "releaseDate": "November 2026",
+  "releaseNotes": "✨ Highlights in Voltrex Light 1.0.2:\n• Added Multiple Select support for files and folders (Ctrl+Click, Shift+Click, Ctrl+A).\n• Batch deletion: move multiple items to Recycle Bin or delete permanently in one action.\n• Contextual multi-selection details panel showing combined file count, subfolders, and size.\n• Status bar selection indicator reflecting real-time item counts and data volume.\n• Continued 100% private, local file processing with zero telemetry.",
+  "downloadUrl": "https://github.com/ziard47/voltrex-light/releases/download/v1.0.2/voltrex-light-setup-1.0.2.exe",
   "downloadSize": 62298485
 }
 

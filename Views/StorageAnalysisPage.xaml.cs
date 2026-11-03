@@ -1,4 +1,6 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -38,6 +40,10 @@ public sealed partial class StorageAnalysisPage : Page
             else if (args.PropertyName == nameof(StorageAnalysisViewModel.SelectedNode))
             {
                 SpaceVisualizer.SelectNode(ViewModel.SelectedNode);
+                if (ViewModel.SelectedNode != null && !ItemsListView.SelectedItems.Contains(ViewModel.SelectedNode))
+                {
+                    ItemsListView.SelectedItem = ViewModel.SelectedNode;
+                }
             }
         };
 
@@ -138,6 +144,12 @@ public sealed partial class StorageAnalysisPage : Page
         }
     }
 
+    private void OnItemsListViewSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        var selected = ItemsListView.SelectedItems.OfType<FileSystemNode>().ToList();
+        ViewModel.UpdateSelectedNodes(selected);
+    }
+
     private void OnItemDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
     {
         ViewModel.ExecuteOpenSelected();
@@ -148,7 +160,12 @@ public sealed partial class StorageAnalysisPage : Page
         // Select the row that was right-clicked so context menu commands target it immediately
         if (sender is FrameworkElement fe && fe.DataContext is FileSystemNode node)
         {
-            ViewModel.SelectedNode = node;
+            // If the right-clicked row is already part of an active multi-selection, retain the entire selection!
+            if (!ItemsListView.SelectedItems.Contains(node))
+            {
+                ItemsListView.SelectedItems.Clear();
+                ItemsListView.SelectedItems.Add(node);
+            }
         }
     }
 
@@ -174,12 +191,17 @@ public sealed partial class StorageAnalysisPage : Page
         {
             if (isShift)
             {
-                await PermanentlyDeleteSelectedItemAsync();
+                await PermanentlyDeleteSelectedItemsAsync();
             }
             else
             {
-                await RecycleSelectedItemAsync();
+                await RecycleSelectedItemsAsync();
             }
+            e.Handled = true;
+        }
+        else if (e.Key == VirtualKey.A && isCtrl)
+        {
+            ItemsListView.SelectAll();
             e.Handled = true;
         }
         else if (e.Key == VirtualKey.Back || (e.Key == VirtualKey.Up && isAlt))
@@ -256,67 +278,188 @@ public sealed partial class StorageAnalysisPage : Page
 
     private async void OnContextMenuRecycle(object sender, RoutedEventArgs e)
     {
-        await RecycleSelectedItemAsync();
+        await RecycleSelectedItemsAsync();
     }
 
     private async void OnContextMenuPermanentDelete(object sender, RoutedEventArgs e)
     {
-        await PermanentlyDeleteSelectedItemAsync();
+        await PermanentlyDeleteSelectedItemsAsync();
     }
 
     private async void OnDeleteButtonClick(object sender, RoutedEventArgs e)
     {
-        await RecycleSelectedItemAsync();
+        await RecycleSelectedItemsAsync();
     }
 
     private async void OnPermanentDeleteButtonClick(object sender, RoutedEventArgs e)
     {
-        await PermanentlyDeleteSelectedItemAsync();
+        await PermanentlyDeleteSelectedItemsAsync();
     }
 
-    private async Task RecycleSelectedItemAsync()
+    private List<FileSystemNode> GetSelectedNodes()
     {
-        var node = ViewModel.SelectedNode;
-        if (node == null || string.IsNullOrEmpty(node.FullPath)) return;
-
-        var confirmed = await ShowConfirmationDialogAsync(
-            title: "Move to Recycle Bin",
-            content: $"Are you sure you want to move '{node.Name}' to the Recycle Bin?",
-            primaryButton: "Move to Recycle Bin");
-
-        if (!confirmed) return;
-
-        bool success = WindowsShellHelper.MoveToRecycleBin(node.FullPath);
-        if (success)
+        if (ItemsListView.SelectedItems.Count > 0)
         {
-            ViewModel.RemoveNodeFromTree(node);
+            return ItemsListView.SelectedItems.OfType<FileSystemNode>().ToList();
+        }
+        if (ViewModel.SelectedNode != null)
+        {
+            return new List<FileSystemNode> { ViewModel.SelectedNode };
+        }
+        return new List<FileSystemNode>();
+    }
+
+    private async Task RecycleSelectedItemsAsync()
+    {
+        var nodes = GetSelectedNodes();
+        if (nodes.Count == 0) return;
+
+        if (nodes.Count == 1)
+        {
+            var node = nodes[0];
+            if (string.IsNullOrEmpty(node.FullPath)) return;
+
+            var confirmed = await ShowConfirmationDialogAsync(
+                title: "Move to Recycle Bin",
+                content: $"Are you sure you want to move '{node.Name}' ({node.FormattedSize}) to the Recycle Bin?",
+                primaryButton: "Move to Recycle Bin");
+
+            if (!confirmed) return;
+
+            bool success = WindowsShellHelper.MoveToRecycleBin(node.FullPath);
+            if (success)
+            {
+                ViewModel.RemoveNodeFromTree(node);
+            }
+            else
+            {
+                await ShowErrorDialogAsync("Recycle Bin Error", $"Failed to move '{node.Name}' to the Recycle Bin. The file may be in use or require elevated administrative permissions.");
+            }
         }
         else
         {
-            await ShowErrorDialogAsync("Recycle Bin Error", $"Failed to move '{node.Name}' to the Recycle Bin. The file may be in use or require elevated administrative permissions.");
+            long totalBytes = nodes.Sum(n => n.SizeBytes);
+            string formattedSize = FileSystemFormatter.FormatBytes(totalBytes);
+            int dirCount = nodes.Count(n => n.IsDirectory);
+            int fileCount = nodes.Count(n => !n.IsDirectory);
+
+            string itemsDesc = dirCount > 0 && fileCount > 0
+                ? $"{fileCount} file(s) and {dirCount} folder(s) ({formattedSize})"
+                : $"{nodes.Count} items ({formattedSize})";
+
+            var confirmed = await ShowConfirmationDialogAsync(
+                title: "Move Multiple Items to Recycle Bin",
+                content: $"Are you sure you want to move {itemsDesc} to the Recycle Bin?",
+                primaryButton: $"Move {nodes.Count} Items to Recycle Bin");
+
+            if (!confirmed) return;
+
+            var successfullyDeleted = new List<FileSystemNode>();
+            var failedNodes = new List<string>();
+
+            foreach (var node in nodes)
+            {
+                if (WindowsShellHelper.MoveToRecycleBin(node.FullPath))
+                {
+                    successfullyDeleted.Add(node);
+                }
+                else
+                {
+                    failedNodes.Add(node.Name);
+                }
+            }
+
+            if (successfullyDeleted.Count > 0)
+            {
+                ViewModel.RemoveNodesFromTree(successfullyDeleted);
+            }
+
+            if (failedNodes.Count > 0)
+            {
+                string failedSummary = failedNodes.Count <= 5
+                    ? string.Join(", ", failedNodes)
+                    : $"{string.Join(", ", failedNodes.Take(5))} and {failedNodes.Count - 5} more";
+
+                await ShowErrorDialogAsync("Recycle Bin Warning",
+                    $"Moved {successfullyDeleted.Count} items to Recycle Bin, but {failedNodes.Count} item(s) could not be moved:\n{failedSummary}\n\nThese items may be locked by another process or require elevated administrator privileges.");
+            }
         }
     }
 
-    private async Task PermanentlyDeleteSelectedItemAsync()
+    private async Task PermanentlyDeleteSelectedItemsAsync()
     {
-        var node = ViewModel.SelectedNode;
-        if (node == null || string.IsNullOrEmpty(node.FullPath)) return;
+        var nodes = GetSelectedNodes();
+        if (nodes.Count == 0) return;
 
-        var confirmed = await ShowConfirmationDialogAsync(
-            title: "Permanently Delete",
-            content: $"Are you sure you want to permanently delete '{node.Name}'?\n\nThis item will be deleted immediately and CANNOT be restored from the Recycle Bin.",
-            primaryButton: "Delete Permanently");
-
-        if (!confirmed) return;
-
-        bool success = WindowsShellHelper.DeletePermanently(node.FullPath);
-        if (success)
+        if (nodes.Count == 1)
         {
-            ViewModel.RemoveNodeFromTree(node);
+            var node = nodes[0];
+            if (string.IsNullOrEmpty(node.FullPath)) return;
+
+            var confirmed = await ShowConfirmationDialogAsync(
+                title: "Permanently Delete",
+                content: $"Are you sure you want to permanently delete '{node.Name}' ({node.FormattedSize})?\n\n⚠️ CAUTION: This item will be deleted immediately and CANNOT be restored from the Recycle Bin.",
+                primaryButton: "Delete Permanently");
+
+            if (!confirmed) return;
+
+            bool success = WindowsShellHelper.DeletePermanently(node.FullPath);
+            if (success)
+            {
+                ViewModel.RemoveNodeFromTree(node);
+            }
+            else
+            {
+                await ShowErrorDialogAsync("Delete Error", $"Failed to delete '{node.Name}'. The file may be locked by another process or require elevated administrative permissions.");
+            }
         }
         else
         {
-            await ShowErrorDialogAsync("Delete Error", $"Failed to delete '{node.Name}'. The file may be locked by another process or require elevated administrative permissions.");
+            long totalBytes = nodes.Sum(n => n.SizeBytes);
+            string formattedSize = FileSystemFormatter.FormatBytes(totalBytes);
+            int dirCount = nodes.Count(n => n.IsDirectory);
+            int fileCount = nodes.Count(n => !n.IsDirectory);
+
+            string itemsDesc = dirCount > 0 && fileCount > 0
+                ? $"{fileCount} file(s) and {dirCount} folder(s) ({formattedSize})"
+                : $"{nodes.Count} items ({formattedSize})";
+
+            var confirmed = await ShowConfirmationDialogAsync(
+                title: "Permanently Delete Multiple Items",
+                content: $"Are you sure you want to permanently delete {itemsDesc}?\n\n⚠️ CAUTION: These items will be permanently erased immediately and CANNOT be recovered from the Recycle Bin.",
+                primaryButton: $"Permanently Delete {nodes.Count} Items");
+
+            if (!confirmed) return;
+
+            var successfullyDeleted = new List<FileSystemNode>();
+            var failedNodes = new List<string>();
+
+            foreach (var node in nodes)
+            {
+                if (WindowsShellHelper.DeletePermanently(node.FullPath))
+                {
+                    successfullyDeleted.Add(node);
+                }
+                else
+                {
+                    failedNodes.Add(node.Name);
+                }
+            }
+
+            if (successfullyDeleted.Count > 0)
+            {
+                ViewModel.RemoveNodesFromTree(successfullyDeleted);
+            }
+
+            if (failedNodes.Count > 0)
+            {
+                string failedSummary = failedNodes.Count <= 5
+                    ? string.Join(", ", failedNodes)
+                    : $"{string.Join(", ", failedNodes.Take(5))} and {failedNodes.Count - 5} more";
+
+                await ShowErrorDialogAsync("Delete Warning",
+                    $"Permanently deleted {successfullyDeleted.Count} items, but {failedNodes.Count} item(s) could not be deleted:\n{failedSummary}\n\nThese items may be locked by another process or require elevated administrator privileges.");
+            }
         }
     }
 
