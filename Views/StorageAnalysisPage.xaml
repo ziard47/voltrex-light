@@ -313,10 +313,10 @@
                         <!-- Items List -->
                         <ListView Grid.Row="1" x:Name="ItemsListView"
                                   ItemsSource="{x:Bind ViewModel.DisplayNodes, Mode=OneWay}"
-                                  SelectedItem="{x:Bind ViewModel.SelectedNode, Mode=TwoWay}"
+                                  SelectionChanged="OnItemsListViewSelectionChanged"
                                   DoubleTapped="OnItemDoubleTapped"
                                   KeyDown="OnListViewKeyDown"
-                                  SelectionMode="Single">
+                                  SelectionMode="Extended">
                             <ListView.ItemTemplate>
                                 <DataTemplate x:DataType="models:FileSystemNode">
                                     <!-- Full row is hit-testable with Background="Transparent" -->
@@ -446,9 +446,15 @@
                                     <TextBlock Text="items" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                     <TextBlock Text="•" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
                                     <TextBlock Text="{x:Bind ViewModel.CurrentDirectorySizeFormatted, Mode=OneWay}" FontWeight="SemiBold" FontSize="11" />
+
+                                    <!-- Multi-Selection Status Summary -->
+                                    <StackPanel Orientation="Horizontal" Spacing="6" Visibility="{x:Bind ViewModel.HasSelection, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <TextBlock Text="|" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Margin="4,0" />
+                                        <TextBlock Text="{x:Bind ViewModel.SelectedStatusText, Mode=OneWay}" FontWeight="SemiBold" FontSize="11" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                                    </StackPanel>
                                 </StackPanel>
 
-                                <TextBlock Text="Enter: open/drill • Del: recycle • Shift+Del: permanent • Backspace: up"
+                                <TextBlock Text="Ctrl+Click / Shift+Click: multi-select • Ctrl+A: select all • Del: recycle • Shift+Del: permanent"
                                            Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}"
                                            HorizontalAlignment="Right" FontSize="10" VerticalAlignment="Center" />
                             </Grid>
@@ -489,25 +495,53 @@
                                         Background="{ThemeResource LayerFillColorDefaultBrush}"
                                         BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
                                         VerticalAlignment="Center">
-                                    <FontIcon Glyph="{x:Bind ViewModel.SelectedNode.IconGlyph, Mode=OneWay}"
+                                    <FontIcon Glyph="{x:Bind ViewModel.SelectionIconGlyph, Mode=OneWay}"
                                               FontSize="18" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
 
                                 <!-- Title and Type aligned to center -->
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                    <TextBlock Text="{x:Bind ViewModel.SelectedNode.Name, Mode=OneWay}"
+                                    <TextBlock Text="{x:Bind ViewModel.SelectionHeaderTitle, Mode=OneWay}"
                                                FontWeight="SemiBold" FontSize="14"
                                                TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                                    <TextBlock Text="{x:Bind ViewModel.SelectedNode.DisplayType, Mode=OneWay}"
+                                    <TextBlock Text="{x:Bind ViewModel.SelectionHeaderSubtitle, Mode=OneWay}"
                                                Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                FontSize="11" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Grid>
                         </Border>
 
-                        <!-- Property Details Grid -->
-                        <StackPanel Spacing="7">
+                        <!-- Multi-Selection Summary Grid -->
+                        <StackPanel Spacing="7" Visibility="{x:Bind ViewModel.IsMultipleSelection, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Grid>
+                                <TextBlock Text="Selected Items" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                <TextBlock Text="{x:Bind ViewModel.SelectedNodesCount, Mode=OneWay}" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="Bold" HorizontalAlignment="Right" />
+                            </Grid>
+
+                            <Grid>
+                                <TextBlock Text="Total Size" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                <TextBlock Text="{x:Bind ViewModel.SelectedTotalSizeFormatted, Mode=OneWay}" Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="Bold" HorizontalAlignment="Right" />
+                            </Grid>
+
+                            <Grid>
+                                <TextBlock Text="Breakdown" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                <TextBlock Text="{x:Bind ViewModel.SelectionCountSummary, Mode=OneWay}" Style="{ThemeResource CaptionTextBlockStyle}" HorizontalAlignment="Right" />
+                            </Grid>
+
+                            <Grid>
+                                <TextBlock Text="Total Files" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                <TextBlock Text="{x:Bind ViewModel.SelectedTotalFilesCount, Mode=OneWay}" Style="{ThemeResource CaptionTextBlockStyle}" HorizontalAlignment="Right" />
+                            </Grid>
+
+                            <Grid>
+                                <TextBlock Text="Total Folders" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                <TextBlock Text="{x:Bind ViewModel.SelectedTotalSubfoldersCount, Mode=OneWay}" Style="{ThemeResource CaptionTextBlockStyle}" HorizontalAlignment="Right" />
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- Single Selection Property Details Grid -->
+                        <StackPanel Spacing="7" Visibility="{x:Bind ViewModel.IsMultipleSelection, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Inverse}">
                             <Grid>
                                 <TextBlock Text="Full Path" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
                                 <TextBlock Text="{x:Bind ViewModel.SelectedNode.FullPath, Mode=OneWay}" Style="{ThemeResource CaptionTextBlockStyle}"
@@ -548,17 +582,18 @@
 
                         <!-- Action Buttons -->
                         <StackPanel Spacing="6" Margin="0,6,0,0">
-                            <!-- Explore (if folder) -->
+                            <!-- Explore (if single folder) -->
                             <Button HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.OpenSelectedCommand}"
-                                    Visibility="{x:Bind ViewModel.SelectedNodeIsDirectory, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    Visibility="{x:Bind ViewModel.CanDrillDownSelected, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <FontIcon Glyph="&#xED25;" FontSize="12" />
                                     <TextBlock Text="Drill Down (Enter)" FontSize="11" />
                                 </StackPanel>
                             </Button>
 
-                            <!-- Open in Explorer -->
-                            <Button HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.OpenInExplorerCommand}">
+                            <!-- Open in Explorer (if single item) -->
+                            <Button HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.OpenInExplorerCommand}"
+                                    Visibility="{x:Bind ViewModel.IsMultipleSelection, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Inverse}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <FontIcon Glyph="&#xEC50;" FontSize="12" />
                                     <TextBlock Text="Show in Explorer" FontSize="11" />
@@ -569,7 +604,7 @@
                             <Button HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.CopyPathCommand}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <FontIcon Glyph="&#xE8C8;" FontSize="12" />
-                                    <TextBlock Text="Copy Path (Ctrl+C)" FontSize="11" />
+                                    <TextBlock Text="{x:Bind ViewModel.CopyPathButtonText, Mode=OneWay}" FontSize="11" />
                                 </StackPanel>
                             </Button>
 
@@ -577,19 +612,20 @@
                             <Button HorizontalAlignment="Stretch" Click="OnDeleteButtonClick">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <FontIcon Glyph="&#xE74D;" FontSize="12" />
-                                    <TextBlock Text="Recycle (Delete)" FontSize="11" />
+                                    <TextBlock Text="{x:Bind ViewModel.DeleteRecycleButtonText, Mode=OneWay}" FontSize="11" />
                                 </StackPanel>
                             </Button>
 
                             <Button HorizontalAlignment="Stretch" Click="OnPermanentDeleteButtonClick">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <FontIcon Glyph="&#xE711;" FontSize="12" Foreground="{ThemeResource SystemFillColorCriticalBrush}" />
-                                    <TextBlock Text="Delete Permanently" FontSize="11" />
+                                    <TextBlock Text="{x:Bind ViewModel.DeletePermanentButtonText, Mode=OneWay}" FontSize="11" />
                                 </StackPanel>
                             </Button>
 
-                            <!-- Properties Dialog -->
-                            <Button HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.ShowPropertiesCommand}">
+                            <!-- Properties Dialog (if single item) -->
+                            <Button HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.ShowPropertiesCommand}"
+                                    Visibility="{x:Bind ViewModel.IsMultipleSelection, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Inverse}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <FontIcon Glyph="&#xE946;" FontSize="12" />
                                     <TextBlock Text="Properties (Alt+Enter)" FontSize="11" />

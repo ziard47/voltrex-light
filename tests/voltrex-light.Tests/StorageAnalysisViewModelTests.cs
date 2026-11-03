@@ -271,5 +271,75 @@ public class StorageAnalysisViewModelTests
         Assert.AreEqual(root, vm.RootNode);
         Assert.IsTrue(vm.HasData);
     }
+
+    [TestMethod]
+    public void StorageAnalysisViewModel_MultiSelection_CalculatesAggregatesAndText()
+    {
+        var mockScan = new MockScanService();
+        var mockPicker = new MockFolderPicker();
+
+        var root = new FileSystemNode { Name = "C:\\", FullPath = "C:\\", IsDirectory = true, SizeBytes = 3000 };
+        var fileA = new FileSystemNode { Name = "a.mp4", FullPath = "C:\\a.mp4", IsDirectory = false, SizeBytes = 1000, Parent = root };
+        var fileB = new FileSystemNode { Name = "b.iso", FullPath = "C:\\b.iso", IsDirectory = false, SizeBytes = 1500, Parent = root };
+        var folderC = new FileSystemNode { Name = "sub", FullPath = "C:\\sub", IsDirectory = true, SizeBytes = 500, TotalFileCount = 2, Parent = root };
+        root.Children.Add(fileA);
+        root.Children.Add(fileB);
+        root.Children.Add(folderC);
+
+        mockScan.LastResult = new ScanResult { RootPath = "C:\\", RootNode = root };
+        var vm = new StorageAnalysisViewModel(mockScan, mockPicker);
+
+        // Initially 1 item selected by default
+        Assert.IsFalse(vm.IsMultipleSelection);
+        Assert.AreEqual(1, vm.SelectedNodesCount);
+
+        // Select 2 items
+        vm.UpdateSelectedNodes(new[] { fileA, fileB });
+        Assert.IsTrue(vm.IsMultipleSelection);
+        Assert.AreEqual(2, vm.SelectedNodesCount);
+        Assert.AreEqual(2500, vm.SelectedTotalSizeBytes);
+        Assert.AreEqual("2 Items Selected", vm.SelectionHeaderTitle);
+        Assert.AreEqual("Recycle 2 Items", vm.DeleteRecycleButtonText);
+        Assert.AreEqual("Delete 2 Permanently", vm.DeletePermanentButtonText);
+        Assert.IsFalse(vm.CanDrillDownSelected);
+        Assert.IsFalse(vm.OpenInExplorerCommand.CanExecute(null)); // Multiple selection disables single-target command
+
+        // Select all 3 items (2 files, 1 folder)
+        vm.UpdateSelectedNodes(new[] { fileA, fileB, folderC });
+        Assert.IsTrue(vm.IsMultipleSelection);
+        Assert.AreEqual(3, vm.SelectedNodesCount);
+        Assert.AreEqual(3000, vm.SelectedTotalSizeBytes);
+        Assert.AreEqual("2 file(s), 1 folder(s)", vm.SelectionCountSummary);
+        Assert.AreEqual(4, vm.SelectedTotalFilesCount); // 2 files + 2 in subfolder
+    }
+
+    [TestMethod]
+    public void StorageAnalysisViewModel_RemoveNodesFromTree_BatchRemovesMultipleItems()
+    {
+        var mockScan = new MockScanService();
+        var mockPicker = new MockFolderPicker();
+
+        var root = new FileSystemNode { Name = "C:\\", FullPath = "C:\\", IsDirectory = true, SizeBytes = 5000, TotalFileCount = 3 };
+        var fileA = new FileSystemNode { Name = "fileA.txt", FullPath = "C:\\fileA.txt", IsDirectory = false, SizeBytes = 1000, Parent = root };
+        var fileB = new FileSystemNode { Name = "fileB.txt", FullPath = "C:\\fileB.txt", IsDirectory = false, SizeBytes = 2000, Parent = root };
+        var fileC = new FileSystemNode { Name = "fileC.txt", FullPath = "C:\\fileC.txt", IsDirectory = false, SizeBytes = 2000, Parent = root };
+        root.Children.Add(fileA);
+        root.Children.Add(fileB);
+        root.Children.Add(fileC);
+
+        mockScan.LastResult = new ScanResult { RootPath = "C:\\", RootNode = root, TotalBytesScanned = 5000, TotalFilesCount = 3 };
+        var vm = new StorageAnalysisViewModel(mockScan, mockPicker);
+
+        Assert.AreEqual(3, vm.DisplayNodes.Count);
+
+        // Batch remove fileA and fileB
+        int removedCount = vm.RemoveNodesFromTree(new[] { fileA, fileB });
+        Assert.AreEqual(2, removedCount);
+        Assert.AreEqual(1, vm.DisplayNodes.Count);
+        Assert.AreEqual("fileC.txt", vm.DisplayNodes[0].Name);
+        Assert.AreEqual(2000, root.SizeBytes);
+        Assert.AreEqual(1, root.TotalFileCount);
+        Assert.AreEqual(100.0, fileC.PercentOfParent, 0.01);
+    }
 }
 

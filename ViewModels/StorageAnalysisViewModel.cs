@@ -91,17 +91,127 @@ public class StorageAnalysisViewModel : ObservableObject
         {
             if (SetProperty(ref _selectedNode, value))
             {
-                OnPropertyChanged(nameof(HasSelection));
-                OnPropertyChanged(nameof(SelectedNodeIsDirectory));
-                OpenSelectedCommand.RaiseCanExecuteChanged();
-                OpenInExplorerCommand.RaiseCanExecuteChanged();
-                OpenWithCommand.RaiseCanExecuteChanged();
-                ShowPropertiesCommand.RaiseCanExecuteChanged();
-                CopyPathCommand.RaiseCanExecuteChanged();
-                CopyFileNameCommand.RaiseCanExecuteChanged();
-                ScanFromHereCommand.RaiseCanExecuteChanged();
+                _selectedNodes.Clear();
+                if (value != null)
+                {
+                    _selectedNodes.Add(value);
+                }
+                NotifySelectionPropertiesChanged();
             }
         }
+    }
+
+    private readonly List<FileSystemNode> _selectedNodes = new();
+    public IReadOnlyList<FileSystemNode> SelectedNodes => _selectedNodes;
+
+    public int SelectedNodesCount => _selectedNodes.Count;
+    public bool IsMultipleSelection => _selectedNodes.Count > 1;
+    public long SelectedTotalSizeBytes => _selectedNodes.Sum(n => n.SizeBytes);
+    public string SelectedTotalSizeFormatted => FileSystemFormatter.FormatBytes(SelectedTotalSizeBytes);
+    public long SelectedTotalFilesCount => _selectedNodes.Sum(n => n.IsDirectory ? n.TotalFileCount : 1);
+    public long SelectedTotalSubfoldersCount => _selectedNodes.Sum(n => n.IsDirectory ? n.TotalSubfolderCount : 0);
+
+    public string SelectionHeaderTitle => IsMultipleSelection
+        ? $"{SelectedNodesCount} Items Selected"
+        : (SelectedNode?.Name ?? "No Selection");
+
+    public string SelectionHeaderSubtitle => IsMultipleSelection
+        ? $"{SelectedTotalSizeFormatted} total"
+        : (SelectedNode?.DisplayType ?? string.Empty);
+
+    public string SelectionCountSummary
+    {
+        get
+        {
+            if (!IsMultipleSelection) return string.Empty;
+            int dirs = _selectedNodes.Count(n => n.IsDirectory);
+            int files = _selectedNodes.Count(n => !n.IsDirectory);
+            if (dirs > 0 && files > 0) return $"{files} file(s), {dirs} folder(s)";
+            if (dirs > 0) return $"{dirs} folder(s)";
+            return $"{files} file(s)";
+        }
+    }
+
+    public string SelectionIconGlyph => IsMultipleSelection
+        ? "\uE8A9"
+        : (SelectedNode?.IconGlyph ?? "\uE8A5");
+
+    public string SelectedStatusText
+    {
+        get
+        {
+            if (IsMultipleSelection)
+            {
+                return $"{SelectedNodesCount} items selected ({SelectedTotalSizeFormatted})";
+            }
+            if (SelectedNode != null)
+            {
+                return $"1 item selected ({SelectedNode.FormattedSize})";
+            }
+            return string.Empty;
+        }
+    }
+
+    public bool CanDrillDownSelected => !IsMultipleSelection && SelectedNodeIsDirectory;
+    public string CopyPathButtonText => IsMultipleSelection ? $"Copy {SelectedNodesCount} Paths (Ctrl+C)" : "Copy Path (Ctrl+C)";
+    public string DeleteRecycleButtonText => IsMultipleSelection ? $"Recycle {SelectedNodesCount} Items" : "Recycle (Delete)";
+    public string DeletePermanentButtonText => IsMultipleSelection ? $"Delete {SelectedNodesCount} Permanently" : "Delete Permanently";
+
+    public void UpdateSelectedNodes(IEnumerable<FileSystemNode> nodes)
+    {
+        _selectedNodes.Clear();
+        if (nodes != null)
+        {
+            _selectedNodes.AddRange(nodes);
+        }
+
+        if (_selectedNodes.Count == 1)
+        {
+            SetProperty(ref _selectedNode, _selectedNodes[0], nameof(SelectedNode));
+        }
+        else if (_selectedNodes.Count == 0)
+        {
+            SetProperty(ref _selectedNode, null, nameof(SelectedNode));
+        }
+        else
+        {
+            if (_selectedNode == null || !_selectedNodes.Contains(_selectedNode))
+            {
+                SetProperty(ref _selectedNode, _selectedNodes[0], nameof(SelectedNode));
+            }
+        }
+
+        NotifySelectionPropertiesChanged();
+    }
+
+    private void NotifySelectionPropertiesChanged()
+    {
+        OnPropertyChanged(nameof(SelectedNode));
+        OnPropertyChanged(nameof(HasSelection));
+        OnPropertyChanged(nameof(SelectedNodeIsDirectory));
+        OnPropertyChanged(nameof(SelectedNodesCount));
+        OnPropertyChanged(nameof(IsMultipleSelection));
+        OnPropertyChanged(nameof(SelectedTotalSizeBytes));
+        OnPropertyChanged(nameof(SelectedTotalSizeFormatted));
+        OnPropertyChanged(nameof(SelectedTotalFilesCount));
+        OnPropertyChanged(nameof(SelectedTotalSubfoldersCount));
+        OnPropertyChanged(nameof(SelectionHeaderTitle));
+        OnPropertyChanged(nameof(SelectionHeaderSubtitle));
+        OnPropertyChanged(nameof(SelectionCountSummary));
+        OnPropertyChanged(nameof(SelectionIconGlyph));
+        OnPropertyChanged(nameof(SelectedStatusText));
+        OnPropertyChanged(nameof(CanDrillDownSelected));
+        OnPropertyChanged(nameof(CopyPathButtonText));
+        OnPropertyChanged(nameof(DeleteRecycleButtonText));
+        OnPropertyChanged(nameof(DeletePermanentButtonText));
+
+        OpenSelectedCommand?.RaiseCanExecuteChanged();
+        OpenInExplorerCommand?.RaiseCanExecuteChanged();
+        OpenWithCommand?.RaiseCanExecuteChanged();
+        ShowPropertiesCommand?.RaiseCanExecuteChanged();
+        CopyPathCommand?.RaiseCanExecuteChanged();
+        CopyFileNameCommand?.RaiseCanExecuteChanged();
+        ScanFromHereCommand?.RaiseCanExecuteChanged();
     }
 
     public string FilterQuery
@@ -225,12 +335,12 @@ public class StorageAnalysisViewModel : ObservableObject
         NavigateUpCommand = new RelayCommand(ExecuteNavigateUp, () => CanNavigateUp);
         NavigateToBreadcrumbCommand = new RelayCommand<FileSystemNode>(ExecuteNavigateToBreadcrumb);
         OpenSelectedCommand = new RelayCommand(ExecuteOpenSelected, () => HasSelection);
-        OpenInExplorerCommand = new RelayCommand(ExecuteOpenInExplorer, () => HasSelection);
-        OpenWithCommand = new RelayCommand(ExecuteOpenWith, () => HasSelection && !SelectedNodeIsDirectory);
-        ShowPropertiesCommand = new RelayCommand(ExecuteShowProperties, () => HasSelection);
+        OpenInExplorerCommand = new RelayCommand(ExecuteOpenInExplorer, () => HasSelection && !IsMultipleSelection);
+        OpenWithCommand = new RelayCommand(ExecuteOpenWith, () => HasSelection && !IsMultipleSelection && !SelectedNodeIsDirectory);
+        ShowPropertiesCommand = new RelayCommand(ExecuteShowProperties, () => HasSelection && !IsMultipleSelection);
         CopyPathCommand = new RelayCommand(ExecuteCopyPath, () => HasSelection);
         CopyFileNameCommand = new RelayCommand(ExecuteCopyFileName, () => HasSelection);
-        ScanFromHereCommand = new AsyncRelayCommand(ExecuteScanFromHereAsync, () => HasSelection && SelectedNodeIsDirectory);
+        ScanFromHereCommand = new AsyncRelayCommand(ExecuteScanFromHereAsync, () => HasSelection && !IsMultipleSelection && SelectedNodeIsDirectory);
         PickFolderCommand = new AsyncRelayCommand(ExecutePickFolderAsync);
         SortCommand = new RelayCommand<string>(SortByColumn);
         ExportCsvCommand = new RelayCommand(async () => await ExecuteExportAsync("csv"), () => HasData);
@@ -363,6 +473,15 @@ public class StorageAnalysisViewModel : ObservableObject
 
     public void ExecuteOpenSelected()
     {
+        if (IsMultipleSelection)
+        {
+            foreach (var node in _selectedNodes.Where(n => !n.IsDirectory).Take(10))
+            {
+                WindowsShellHelper.OpenFile(node.FullPath);
+            }
+            return;
+        }
+
         if (SelectedNode == null) return;
 
         if (SelectedNode.IsDirectory)
@@ -401,7 +520,12 @@ public class StorageAnalysisViewModel : ObservableObject
 
     private void ExecuteCopyPath()
     {
-        if (SelectedNode != null)
+        if (IsMultipleSelection)
+        {
+            var paths = string.Join(Environment.NewLine, _selectedNodes.Select(n => n.FullPath));
+            WindowsShellHelper.CopyToClipboard(paths);
+        }
+        else if (SelectedNode != null)
         {
             WindowsShellHelper.CopyToClipboard(SelectedNode.FullPath);
         }
@@ -409,7 +533,12 @@ public class StorageAnalysisViewModel : ObservableObject
 
     private void ExecuteCopyFileName()
     {
-        if (SelectedNode != null)
+        if (IsMultipleSelection)
+        {
+            var names = string.Join(Environment.NewLine, _selectedNodes.Select(n => n.Name));
+            WindowsShellHelper.CopyToClipboard(names);
+        }
+        else if (SelectedNode != null)
         {
             WindowsShellHelper.CopyToClipboard(SelectedNode.Name);
         }
@@ -453,33 +582,51 @@ public class StorageAnalysisViewModel : ObservableObject
         }
     }
 
-    public bool RemoveNodeFromTree(FileSystemNode node)
+    public int RemoveNodesFromTree(IEnumerable<FileSystemNode> nodes)
     {
-        var parent = node.Parent;
-        if (parent == null) return false;
+        if (nodes == null) return 0;
 
-        parent.Children.Remove(node);
-        DisplayNodes.Remove(node);
+        var nodeList = nodes.ToList();
+        if (nodeList.Count == 0) return 0;
 
-        // Deduct sizes and counts from ancestors
-        long removedBytes = node.SizeBytes;
-        long removedFiles = node.IsDirectory ? node.TotalFileCount : 1;
-        long removedDirs = node.IsDirectory ? node.TotalSubfolderCount + 1 : 0;
+        var parentsToUpdate = new HashSet<FileSystemNode>();
 
-        var curr = parent;
-        while (curr != null)
+        int count = 0;
+        foreach (var node in nodeList)
         {
-            curr.SizeBytes = Math.Max(0, curr.SizeBytes - removedBytes);
-            curr.TotalFileCount = Math.Max(0, curr.TotalFileCount - removedFiles);
-            curr.TotalSubfolderCount = Math.Max(0, curr.TotalSubfolderCount - removedDirs);
-            curr = curr.Parent;
+            var parent = node.Parent;
+            if (parent == null) continue;
+
+            parent.Children.Remove(node);
+            DisplayNodes.Remove(node);
+            _selectedNodes.Remove(node);
+
+            // Deduct sizes and counts from ancestors
+            long removedBytes = node.SizeBytes;
+            long removedFiles = node.IsDirectory ? node.TotalFileCount : 1;
+            long removedDirs = node.IsDirectory ? node.TotalSubfolderCount + 1 : 0;
+
+            var curr = parent;
+            while (curr != null)
+            {
+                curr.SizeBytes = Math.Max(0, curr.SizeBytes - removedBytes);
+                curr.TotalFileCount = Math.Max(0, curr.TotalFileCount - removedFiles);
+                curr.TotalSubfolderCount = Math.Max(0, curr.TotalSubfolderCount - removedDirs);
+                curr = curr.Parent;
+            }
+
+            parentsToUpdate.Add(parent);
+            count++;
         }
 
-        // Recompute parent percentages for siblings
-        long parentSize = parent.SizeBytes;
-        foreach (var c in parent.Children)
+        // Recompute parent percentages for siblings in affected parents
+        foreach (var parent in parentsToUpdate)
         {
-            c.PercentOfParent = parentSize > 0 ? ((double)c.SizeBytes / parentSize) * 100.0 : 0.0;
+            long parentSize = parent.SizeBytes;
+            foreach (var c in parent.Children)
+            {
+                c.PercentOfParent = parentSize > 0 ? ((double)c.SizeBytes / parentSize) * 100.0 : 0.0;
+            }
         }
 
         if (RootNode != null && RootNode.SizeBytes > 0)
@@ -495,7 +642,13 @@ public class StorageAnalysisViewModel : ObservableObject
 
         SelectedNode = DisplayNodes.FirstOrDefault() ?? CurrentDirectoryNode;
         ApplyFilterAndSort();
-        return true;
+        return count;
+    }
+
+    public bool RemoveNodeFromTree(FileSystemNode node)
+    {
+        if (node == null) return false;
+        return RemoveNodesFromTree(new[] { node }) > 0;
     }
 
     private static void CalculateRootPercentagesRecursive(FileSystemNode node, long rootTotalSize)
